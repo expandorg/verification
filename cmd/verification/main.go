@@ -19,7 +19,7 @@ func main() {
 	environment := flag.String("env", "local", "use compose in compose-dev")
 	flag.Parse()
 
-	if *environment != "compose" {
+	if *environment == "local" {
 		err := godotenv.Load()
 		if err != nil {
 			log.Fatal("Error loading .env file")
@@ -32,11 +32,13 @@ func main() {
 		log.Fatal("mysql connection error", err)
 	}
 	defer db.Close()
+
 	ds := datastore.NewDatastore(db)
+
 	authorizer := authorization.NewAuthorizer()
 	svc := service.New(ds, authorizer)
-	s := server.New(db, svc)
-	log.Println("info", fmt.Sprintf("Starting service on port 3000"))
+	s := server.New(svc)
+	log.Println("info", fmt.Sprintf("Starting service on port 8186"))
 	http.Handle("/", s)
-	http.ListenAndServe(":3000", nil)
+	http.ListenAndServe(":8186", nil)
 }

@@ -27,7 +27,7 @@ func TestNewAuthorizer(t *testing.T) {
 }
 
 func TestSetAuthData(t *testing.T) {
-	authData := authentication.AuthData{1591960106, "http://localhost:3000", 8}
+	authData := authentication.AuthData{1591960106, "http://localhost:8186", 8}
 	type fields struct {
 		authData authentication.AuthData
 	}

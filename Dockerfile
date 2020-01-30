@@ -21,6 +21,6 @@ WORKDIR /app
 
 COPY --from=build-stage  /go/src/github.com/gemsorg/verification/bin/verification .
 
-EXPOSE 3000
+EXPOSE 8186
 
 CMD ["./verification"]
