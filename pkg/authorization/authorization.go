@@ -1,7 +1,7 @@
 package authorization
 
 import (
-	"github.com/gemsorg/boilerplate/pkg/authentication"
+	"github.com/gemsorg/verification/pkg/authentication"
 )
 
 type Authorizer interface {

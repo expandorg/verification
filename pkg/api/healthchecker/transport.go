@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"net/http"
 
-	service "github.com/gemsorg/boilerplate/pkg/service"
+	service "github.com/gemsorg/verification/pkg/service"
 	kithttp "github.com/go-kit/kit/transport/http"
 )
 
-func MakeHandler(s service.BoilerplateService) http.Handler {
+func MakeHandler(s service.VerificationService) http.Handler {
 	return kithttp.NewServer(
 		makeHealthyEndpoint(s),
 		decodeHealthRequest,

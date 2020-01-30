@@ -1,6 +1,6 @@
-# Boilerplate Service
+# verification Service
  
-Backend service for worker-job boilerplate
+Backend service for verification
 
 ## Getting started 
 
@@ -13,11 +13,11 @@ Backend service for worker-job boilerplate
 
 Clone the repository with: 
 
-`go get -u github.com/gemsorg/boilerplate`
+`go get -u github.com/gemsorg/verification`
 
 OR 
 
-create a directory `$GOPATH/src/github/gemsorg` and execute: git clone git@github.com:gemsorg/boilerplate.git 
+create a directory `$GOPATH/src/github/gemsorg` and execute: git clone git@github.com:gemsorg/verification.git 
 
 Run the project dependencies (db, etc.) with `make up`
 

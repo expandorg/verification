@@ -8,7 +8,7 @@ endif
 
 .PHONY: default
 
-BIN_NAME=boilerplate
+BIN_NAME=verification
 VERSION ?= dev
 GIT_COMMIT ?=$(shell git rev-parse HEAD)
 SHORT_COMMIT ?=$(shell git rev-parse --short HEAD)
@@ -18,7 +18,7 @@ TIMESTAMP ?= $(shell date +%Y%m%d%H%M)
 default: help
 
 help:
-	@echo 'Management commands for boilerplate:'
+	@echo 'Management commands for verification:'
 	@echo
 	@echo 'Usage:'
 	@echo '    make build        			Builds the binary locally.'
@@ -41,12 +41,12 @@ help:
 build: build-service
 
 run: build 
-	bin/boilerplate
+	bin/verification
 
 build-service:
 	@echo "Building service"
 	mkdir -p ./bin
-	go build -ldflags "-w -X main.GitCommit=${GIT_COMMIT} -X main.Version=${VERSION} -X main.BuildDate=${BUILD_DATE}" -o ./bin/boilerplate ./cmd/boilerplate/
+	go build -ldflags "-w -X main.GitCommit=${GIT_COMMIT} -X main.Version=${VERSION} -X main.BuildDate=${BUILD_DATE}" -o ./bin/verification ./cmd/verification/
 
 up:
 	docker-compose up --build
@@ -62,10 +62,10 @@ clean:
 	@test ! -e bin/${BIN_NAME} || rm bin/${BIN_NAME}
 
 deploy-dev: get-credentials-dev docker-build-dev push-dev
-	kubectl set image deployment/boilerplate boilerplate=gcr.io/gems-org/boilerplate-dev:$(VERSION)
+	kubectl set image deployment/verification verification=gcr.io/gems-org/verification-dev:$(VERSION)
 
 deploy-prod: get-credentials-prod docker-build-prod push-prod
-	kubectl set image deployment/boilerplate boilerplate=gcr.io/gems-org/boilerplate:$(VERSION)
+	kubectl set image deployment/verification verification=gcr.io/gems-org/verification:$(VERSION)
 
 run-tests:
 	go test ./... -v -count=1
@@ -79,17 +79,17 @@ add-migration:
 	echo $(shell expr $(LAST_MIGRATION) + 1 ) > migrations/version
 
 build-migrations:
-	docker build -t boilerplate-migration migrations
+	docker build -t verification-migration migrations
 
 run-migrations: build-migrations
-	docker run --network host boilerplate-migration \
+	docker run --network host verification-migration \
 	$(action) $(version) \
-	"mysql://$(BOILERPLATE_DB_USER):$(BOILERPLATE_DB_PASSWORD)@tcp($(BOILERPLATE_DB_HOST):$(BOILERPLATE_DB_PORT))/$(BOILERPLATE_DB_NAME)"
+	"mysql://$(VERIFICATION_DB_USER):$(VERIFICATION_DB_PASSWORD)@tcp($(VERIFICATION_DB_HOST):$(VERIFICATION_DB_PORT))/$(VERIFICATION_DB_NAME)"
 
 migrate-latest: build-migrations
-	docker run --network host boilerplate-migration \
+	docker run --network host verification-migration \
 	goto $(LAST_MIGRATION) \
-	"mysql://$(BOILERPLATE_DB_USER):$(BOILERPLATE_DB_PASSWORD)@tcp($(BOILERPLATE_DB_HOST):$(BOILERPLATE_DB_PORT))/$(BOILERPLATE_DB_NAME)"
+	"mysql://$(VERIFICATION_DB_USER):$(VERIFICATION_DB_PASSWORD)@tcp($(VERIFICATION_DB_HOST):$(VERIFICATION_DB_PORT))/$(VERIFICATION_DB_NAME)"
 
 db-seed:
 	@echo "Seeding db"

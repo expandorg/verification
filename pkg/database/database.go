@@ -12,11 +12,11 @@ import (
 const connMaxLifetime = time.Second * 5
 
 func Connect() (*sqlx.DB, error) {
-	host := os.Getenv("BOILERPLATE_DB_HOST")
-	port := os.Getenv("BOILERPLATE_DB_PORT")
-	name := os.Getenv("BOILERPLATE_DB_NAME")
-	user := os.Getenv("BOILERPLATE_DB_USER")
-	password := os.Getenv("BOILERPLATE_DB_PASSWORD")
+	host := os.Getenv("VERIFICATION_DB_HOST")
+	port := os.Getenv("VERIFICATION_DB_PORT")
+	name := os.Getenv("VERIFICATION_DB_NAME")
+	user := os.Getenv("VERIFICATION_DB_USER")
+	password := os.Getenv("VERIFICATION_DB_PASSWORD")
 	if password != "" {
 		password = ":" + password
 	}

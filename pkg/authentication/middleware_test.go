@@ -6,7 +6,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gemsorg/boilerplate/pkg/mock"
+	"github.com/gemsorg/verification/pkg/mock"
 )
 
 func TestAuthorizationHeaderIsInsertedInContextWithBearer(t *testing.T) {

@@ -9,31 +9,31 @@ import (
 	reflect "reflect"
 )
 
-// MockBoilerplateService is a mock of BoilerplateService interface
-type MockBoilerplateService struct {
+// MockVerificationService is a mock of VerificationService interface
+type MockVerificationService struct {
 	ctrl     *gomock.Controller
-	recorder *MockBoilerplateServiceMockRecorder
+	recorder *MockVerificationServiceMockRecorder
 }
 
-// MockBoilerplateServiceMockRecorder is the mock recorder for MockBoilerplateService
-type MockBoilerplateServiceMockRecorder struct {
-	mock *MockBoilerplateService
+// MockVerificationServiceMockRecorder is the mock recorder for MockVerificationService
+type MockVerificationServiceMockRecorder struct {
+	mock *MockVerificationService
 }
 
-// NewMockBoilerplateService creates a new mock instance
-func NewMockBoilerplateService(ctrl *gomock.Controller) *MockBoilerplateService {
-	mock := &MockBoilerplateService{ctrl: ctrl}
-	mock.recorder = &MockBoilerplateServiceMockRecorder{mock}
+// NewMockVerificationService creates a new mock instance
+func NewMockVerificationService(ctrl *gomock.Controller) *MockVerificationService {
+	mock := &MockVerificationService{ctrl: ctrl}
+	mock.recorder = &MockVerificationServiceMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use
-func (m *MockBoilerplateService) EXPECT() *MockBoilerplateServiceMockRecorder {
+func (m *MockVerificationService) EXPECT() *MockVerificationServiceMockRecorder {
 	return m.recorder
 }
 
 // Healthy mocks base method
-func (m *MockBoilerplateService) Healthy() bool {
+func (m *MockVerificationService) Healthy() bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Healthy")
 	ret0, _ := ret[0].(bool)
@@ -41,7 +41,7 @@ func (m *MockBoilerplateService) Healthy() bool {
 }
 
 // Healthy indicates an expected call of Healthy
-func (mr *MockBoilerplateServiceMockRecorder) Healthy() *gomock.Call {
+func (mr *MockVerificationServiceMockRecorder) Healthy() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Healthy", reflect.TypeOf((*MockBoilerplateService)(nil).Healthy))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Healthy", reflect.TypeOf((*MockVerificationService)(nil).Healthy))
 }

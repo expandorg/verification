@@ -6,13 +6,13 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gemsorg/boilerplate/pkg/authorization"
-	"github.com/gemsorg/boilerplate/pkg/database"
-	"github.com/gemsorg/boilerplate/pkg/datastore"
-	"github.com/gemsorg/boilerplate/pkg/service"
+	"github.com/gemsorg/verification/pkg/authorization"
+	"github.com/gemsorg/verification/pkg/database"
+	"github.com/gemsorg/verification/pkg/datastore"
+	"github.com/gemsorg/verification/pkg/service"
 	"github.com/joho/godotenv"
 
-	"github.com/gemsorg/boilerplate/pkg/server"
+	"github.com/gemsorg/verification/pkg/server"
 )
 
 func main() {

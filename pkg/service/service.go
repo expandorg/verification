@@ -1,11 +1,11 @@
 package service
 
 import (
-	"github.com/gemsorg/boilerplate/pkg/authorization"
-	"github.com/gemsorg/boilerplate/pkg/datastore"
+	"github.com/gemsorg/verification/pkg/authorization"
+	"github.com/gemsorg/verification/pkg/datastore"
 )
 
-type BoilerplateService interface {
+type VerificationService interface {
 	Healthy() bool
 }
 

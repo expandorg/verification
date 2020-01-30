@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gemsorg/boilerplate/pkg/mock"
+	"github.com/gemsorg/verification/pkg/mock"
 	"github.com/stretchr/testify/assert"
 )
 

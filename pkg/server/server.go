@@ -3,18 +3,18 @@ package server
 import (
 	"net/http"
 
-	"github.com/gemsorg/boilerplate/pkg/authentication"
+	"github.com/gemsorg/verification/pkg/authentication"
 
 	"github.com/jmoiron/sqlx"
 
-	"github.com/gemsorg/boilerplate/pkg/api/healthchecker"
-	"github.com/gemsorg/boilerplate/pkg/service"
+	"github.com/gemsorg/verification/pkg/api/healthchecker"
+	"github.com/gemsorg/verification/pkg/service"
 	"github.com/gorilla/mux"
 )
 
 func New(
 	db *sqlx.DB,
-	s service.BoilerplateService,
+	s service.VerificationService,
 ) http.Handler {
 	r := mux.NewRouter()
 

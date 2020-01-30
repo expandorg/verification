@@ -3,12 +3,12 @@ package healthchecker
 import (
 	"context"
 
-	service "github.com/gemsorg/boilerplate/pkg/service"
+	service "github.com/gemsorg/verification/pkg/service"
 
 	"github.com/go-kit/kit/endpoint"
 )
 
-func makeHealthyEndpoint(svc service.BoilerplateService) endpoint.Endpoint {
+func makeHealthyEndpoint(svc service.VerificationService) endpoint.Endpoint {
 	return func(_ context.Context, request interface{}) (interface{}, error) {
 		healthy := svc.Healthy()
 		return HealthyResponse{healthy}, nil
