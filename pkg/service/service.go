@@ -1,12 +1,20 @@
 package service
 
 import (
+	"github.com/gemsorg/verification/pkg/authentication"
 	"github.com/gemsorg/verification/pkg/authorization"
 	"github.com/gemsorg/verification/pkg/datastore"
+	"github.com/gemsorg/verification/pkg/verification"
 )
 
 type VerificationService interface {
 	Healthy() bool
+	SetAuthData(data authentication.AuthData)
+	GetResponses(verification.Params) (verification.Responses, error)
+	GetResponse(id string) (*verification.Response, error)
+	CreateResponse(n verification.NewResponse) (*verification.Response, error)
+	GetSettings(jobID uint64) (*verification.Settings, error)
+	CreateSettings(verification.Settings) (*verification.Settings, error)
 }
 
 type service struct {
@@ -23,4 +31,32 @@ func New(s datastore.Storage, a authorization.Authorizer) *service {
 
 func (s *service) Healthy() bool {
 	return true
+}
+
+func (s *service) SetAuthData(data authentication.AuthData) {
+	s.authorizor.SetAuthData(data)
+}
+
+func (s *service) GetResponses(p verification.Params) (verification.Responses, error) {
+	return s.store.GetResponses(p)
+}
+
+func (s *service) GetResponse(id string) (*verification.Response, error) {
+	return s.store.GetResponse(id)
+}
+
+func (s *service) CreateResponse(n verification.NewResponse) (*verification.Response, error) {
+	return s.store.CreateResponse(n)
+}
+
+func (s *service) GetSettings(jobID uint64) (*verification.Settings, error) {
+	set, err := s.store.GetSettings(jobID)
+	if _, ok := err.(datastore.NoRowErr); ok {
+		return nil, nil
+	}
+	return set, err
+}
+
+func (s *service) CreateSettings(set verification.Settings) (*verification.Settings, error) {
+	return s.store.CreateSettings(set)
 }

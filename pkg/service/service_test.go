@@ -1,19 +1,12 @@
 package service
 
 import (
-	"reflect"
 	"testing"
-
-	"github.com/gemsorg/verification/pkg/authentication"
 
 	"github.com/gemsorg/verification/pkg/authorization"
 	"github.com/gemsorg/verification/pkg/datastore"
-	"github.com/gemsorg/verification/pkg/filter"
-	"github.com/gemsorg/verification/pkg/mock"
-	"github.com/gemsorg/verification/pkg/workerprofile"
 	"github.com/stretchr/testify/assert"
 )
-
 
 func TestNew(t *testing.T) {
 	authorizer := authorization.NewAuthorizer()
