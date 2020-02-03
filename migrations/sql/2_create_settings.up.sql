@@ -4,4 +4,3 @@ CREATE TABLE `settings` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `job_id` (`job_id`)
 )
-

@@ -1,25 +1,48 @@
-// 
+Domain model
 
-POST /verify
+job
+  (id)
+  verification_form
+  task_form
 
-{
-  jobId, 
-  taskId,
-  responseId,
-  workerId,
-  verifierId,
-  score,
-  reason,
-}
+  verification_module
+  verification_agreement_count
+  verification_score_threshold
+  verification_prompt
+  funding_verification_reward
+  verification_limit
 
- score {
-  id,
-  created_at,
-  jobId, 
-  taskId,
-  responseId,
-  workerId,
-  verifierId,
-  score,
-  reason,
-}
+  task
+    (job_id, id)
+    data
+    is_active
+    assignment_count
+    pending_count
+    accepted_count
+    verification_count
+
+// task flow
+assignment
+  (job_id, task_id, id)
+  user_id
+
+responses
+  (job_id, task_id, id)
+  worker_id
+  value
+  is_accepted
+  verifications_count
+
+// verification flow
+verification_assignment
+  (job_id, task_id, response_id, id)
+  user_id  
+
+verification_responses
+  (job_id, task_id, response_id, id)
+  worker_id
+  verifier_id
+  value
+  reason
+
+

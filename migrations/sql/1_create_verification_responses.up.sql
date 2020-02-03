@@ -6,7 +6,7 @@ CREATE TABLE `verification_responses` (
   `worker_id` int unsigned NOT NULL,
   `verifier_id` int unsigned NULL,
   `value` tinyint(1) NOT NULL,
-  `reason` varchar(255) NULL,
+  `reason` text NULL,
   `created_at` TIMESTAMP NOT NULL DEFAULT NOW(),
   `updated_at` TIMESTAMP NOT NULL DEFAULT NOW() ON UPDATE NOW(),
   PRIMARY KEY (`id`),
