@@ -1,10 +1,10 @@
-Domain model
+// Domain model
 
 job
   (id)
-  verification_form
   task_form
 
+  verification_form
   verification_module
   verification_agreement_count
   verification_score_threshold
@@ -21,7 +21,7 @@ job
     accepted_count
     verification_count
 
-// task flow
+//- task flow
 assignment
   (job_id, task_id, id)
   user_id
@@ -33,7 +33,7 @@ responses
   is_accepted
   verifications_count
 
-// verification flow
+//- verification flow
 verification_assignment
   (job_id, task_id, response_id, id)
   user_id  
@@ -45,4 +45,63 @@ verification_responses
   value
   reason
 
+verificaiton_eligibility
+  job_id
+  user_id
+
+
+// modules --------------------------------
+verification-settings
+  get(jobId)
+  create(settings)
+  
+  // structures
+  verification-settings
+    verficaiton_type
+      automatic
+      manual
+    
+    manual
+      form
+    
+    verification_agreement_count
+    verification_prompt
+    funding_verification_reward
+    verification_limit
+
+
+verification-assignment
+  assign(jobId, userId)
+  unassign(jobId, userId)
+
+verification-verify
+  verify(userId, responseId, result, reason)
+  
+
+
+
+func Verify(userID uint64, responseID uint64, result bool, reason string) (interface{}, error) {
+
+	// Ensure verification is assigned
+	isAssigned, err := verificationassignmentsvc.CheckAssignedVerification(userID, responseID)
+
+	response, err := responsesvc.GetResponse(responseID)
+
+	settings, err := settingssvc.GetSettings(response.JobID)
+
+	// Get job's verification module
+	verificationModule := verification.VerificationModules[settings.VerificationModule]
+	
+	vresult, err = verificationModule.Verify(
+		userID, 
+		response, 
+		result,
+		reason
+	)
+
+	if err != nil {
+		return nil, err
+	}
+	return result, nil
+}
 
