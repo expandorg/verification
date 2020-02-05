@@ -88,7 +88,7 @@ verification-verify
     // if need payout ? 
     //   payoutVerifier
     scoreResponse()
-      ScoreResponse()
+      ScoreResponse() (tx scope)
         // Insert score
         // Set response to accepted
         // Delete verification assignment

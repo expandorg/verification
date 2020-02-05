@@ -3,6 +3,7 @@ package server
 import (
 	"net/http"
 
+	"github.com/gemsorg/verification/pkg/api/assignmentcreator"
 	"github.com/gemsorg/verification/pkg/api/responsefetcher"
 	"github.com/gemsorg/verification/pkg/api/responseverifier"
 	"github.com/gemsorg/verification/pkg/authentication"
@@ -20,6 +21,7 @@ func New(s service.VerificationService) http.Handler {
 
 	r.Handle("/_health", healthchecker.MakeHandler(s)).Methods("GET")
 
+	r.Handle("/assign", assignmentcreator.MakeHandler(s)).Methods("POST")
 	r.Handle("/verify/manual", responseverifier.MakeManualHandler(s)).Methods("POST")
 	r.Handle("/verify/automatic", responseverifier.MakeAutomaticHandler(s)).Methods("POST")
 

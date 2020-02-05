@@ -11,6 +11,8 @@ type VerificationService interface {
 	Healthy() bool
 	SetAuthData(data authentication.AuthData)
 
+	Assign(r verification.NewAssignment, set *verification.Settings) (*verification.Assignment, error)
+
 	VerifyManual(r verification.NewResponse, set *verification.Settings) (*verification.Response, error)
 	VerifyAutomatic(r verification.NewResponse, set *verification.Settings) (*verification.Response, error)
 
@@ -64,6 +66,13 @@ func (s *service) GetSettings(jobID uint64) (*verification.Settings, error) {
 
 func (s *service) CreateSettings(set verification.Settings) (*verification.Settings, error) {
 	return s.store.CreateSettings(set)
+}
+
+func (s *service) Assign(r verification.NewAssignment, set *verification.Settings) (*verification.Assignment, error) {
+	if !set.Manual {
+		return nil, InvalidVerificationType{set.Manual}
+	}
+	return nil, nil
 }
 
 func (s *service) VerifyManual(r verification.NewResponse, set *verification.Settings) (*verification.Response, error) {
