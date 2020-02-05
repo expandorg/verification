@@ -14,6 +14,7 @@ type Storage interface {
 	CreateResponse(r verification.NewResponse) (*verification.Response, error)
 	GetSettings(jobID uint64) (*verification.Settings, error)
 	CreateSettings(s verification.Settings) (*verification.Settings, error)
+	GetWhitelist(jobID uint64, verifierID uint64) (*verification.Whitelist, error)
 }
 
 type VerificationStore struct {
@@ -30,11 +31,10 @@ func (vs *VerificationStore) GetResponses(p verification.Params) (verification.R
 	responses := verification.Responses{}
 
 	query := "SELECT * FROM verification_responses"
-	condition, args := p.ToQueryCondition()
+	conditions, args := p.ToQueryCondition()
 	if len(args) > 0 {
-		query = query + " WHERE " + condition
+		query = query + " WHERE " + conditions
 	}
-
 	err := vs.DB.Select(&responses, query, args...)
 	if err != nil {
 		return responses, err
@@ -88,7 +88,7 @@ func (vs *VerificationStore) GetSettings(jobID uint64) (*verification.Settings, 
 
 func (vs *VerificationStore) CreateSettings(s verification.Settings) (*verification.Settings, error) {
 	// WE always replace the settings with the incoming
-	_, err := vs.DB.Exec("REPLACE INTO settings (job_id) VALUES (?)", s.JobID)
+	_, err := vs.DB.Exec("REPLACE INTO settings (`job_id`, `manual`, `requester`, `limit`, `whitelist`, `agreement_count`) VALUES (?,?,?,?,?,?)", s.JobID, s.Manual, s.Requester, s.Limit, s.Whitelist, s.AgreementCount)
 	if err != nil {
 		mysqlerr, ok := err.(*mysql.MySQLError)
 		// duplicate entry job_id
@@ -98,4 +98,13 @@ func (vs *VerificationStore) CreateSettings(s verification.Settings) (*verificat
 		return nil, err
 	}
 	return vs.GetSettings(s.JobID)
+}
+
+func (vs *VerificationStore) GetWhitelist(jobID uint64, verifierID uint64) (*verification.Whitelist, error) {
+	wl := &verification.Whitelist{}
+	err := vs.DB.Get(wl, "SELECT * FROM whitelists WHERE job_id = ? AND verifier_id = ?", jobID, verifierID)
+	if err != nil {
+		return nil, err
+	}
+	return wl, nil
 }

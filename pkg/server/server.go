@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gemsorg/verification/pkg/api/responsefetcher"
+	"github.com/gemsorg/verification/pkg/api/responseverifier"
 	"github.com/gemsorg/verification/pkg/authentication"
 
 	"github.com/gemsorg/verification/pkg/api/healthchecker"
@@ -18,6 +19,9 @@ func New(s service.VerificationService) http.Handler {
 	r := mux.NewRouter()
 
 	r.Handle("/_health", healthchecker.MakeHandler(s)).Methods("GET")
+
+	r.Handle("/verify/manual", responseverifier.MakeManualHandler(s)).Methods("POST")
+	r.Handle("/verify/automatic", responseverifier.MakeAutomaticHandler(s)).Methods("POST")
 
 	r.Handle("/response", responsecreator.MakeHandler(s)).Methods("POST")
 	r.Handle("/response", responsefetcher.MakeResponsesFetcherHandler(s)).Methods("GET")

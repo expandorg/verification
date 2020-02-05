@@ -10,9 +10,14 @@ import (
 type VerificationService interface {
 	Healthy() bool
 	SetAuthData(data authentication.AuthData)
+
+	VerifyManual(r verification.NewResponse, set *verification.Settings) (*verification.Response, error)
+	VerifyAutomatic(r verification.NewResponse, set *verification.Settings) (*verification.Response, error)
+
 	GetResponses(verification.Params) (verification.Responses, error)
 	GetResponse(id string) (*verification.Response, error)
 	CreateResponse(n verification.NewResponse) (*verification.Response, error)
+
 	GetSettings(jobID uint64) (*verification.Settings, error)
 	CreateSettings(verification.Settings) (*verification.Settings, error)
 }
@@ -59,4 +64,29 @@ func (s *service) GetSettings(jobID uint64) (*verification.Settings, error) {
 
 func (s *service) CreateSettings(set verification.Settings) (*verification.Settings, error) {
 	return s.store.CreateSettings(set)
+}
+
+func (s *service) VerifyManual(r verification.NewResponse, set *verification.Settings) (*verification.Response, error) {
+	if !set.Manual {
+		return nil, InvalidVerificationType{set.Manual}
+	}
+
+	resp, err := s.CreateResponse(r)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
+}
+
+func (s *service) VerifyAutomatic(r verification.NewResponse, set *verification.Settings) (*verification.Response, error) {
+	if set.Manual {
+		return nil, InvalidVerificationType{set.Manual}
+	}
+	resp, err := s.CreateResponse(r)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }

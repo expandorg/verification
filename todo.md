@@ -8,7 +8,6 @@ job
   verification_module
   verification_agreement_count
   verification_score_threshold
-  verification_prompt
   funding_verification_reward
   verification_limit
 
@@ -55,19 +54,17 @@ verification-settings
   get(jobId)
   create(settings)
   
-  // structures
-  verification-settings
-    verficaiton_type
-      automatic
-      manual
-    
+  settings: 
+    type (automatic (consenus, external), manual)
+
     manual
+      whitelist?
       form
-    
-    verification_agreement_count
-    verification_prompt
-    funding_verification_reward
-    verification_limit
+      verification_limit
+
+    automatic
+      agreement_count
+
 
 
 verification-assignment
@@ -76,32 +73,55 @@ verification-assignment
 
 verification-verify
   verify(userId, responseId, result, reason)
-  
+  verifyAtomatic()
 
 
+// current
+[POST] /api/v1/tasks/:taskID/submit
+  // if verificationsettings().automatic
+        verificationModule.Verify() // automatic
 
-func Verify(userID uint64, responseID uint64, result bool, reason string) (interface{}, error) {
+[POST] /api/v1/responses/:responseID/verify
+  // Ensure verification is assigned
 
-	// Ensure verification is assigned
-	isAssigned, err := verificationassignmentsvc.CheckAssignedVerification(userID, responseID)
+  verificationModule.Verify() // manual
+    // if need payout ? 
+    //   payoutVerifier
+    scoreResponse()
+      ScoreResponse()
+        // Insert score
+        // Set response to accepted
+        // Delete verification assignment
+        // Update task counters (pending)
+        // Update user counters (accepted, rejected) 
+        // Update Assignment (svc)
 
-	response, err := responsesvc.GetResponse(responseID)
+      // payout or reject task (funding)
+      // fireEvent(accepted)
 
-	settings, err := settingssvc.GetSettings(response.JobID)
 
-	// Get job's verification module
-	verificationModule := verification.VerificationModules[settings.VerificationModule]
-	
-	vresult, err = verificationModule.Verify(
-		userID, 
-		response, 
-		result,
-		reason
-	)
+// new
+[POST] /api/v1/tasks/:taskID/submit
+  // if !verificationsvc.settings().manual
+        verificationsvc.VerifyAutomatic()
 
-	if err != nil {
-		return nil, err
-	}
-	return result, nil
-}
+[POST] /api/v1/responses/:responseID/verify
+  // Ensure verification is assigned
+
+  settings = verificationsvc.settings()
+
+  if settings.manual
+    if !settings.requester ? 
+      payoutVerifier()
+
+    verificationsvc.SaveScore()
+
+    // Set response to accepted
+    // Delete verification assignment
+    // Update task counters (pending)
+    // Update user counters (accepted, rejected) 
+    // Update Assignment (svc)
+
+    // payout or reject task (funding)
+    // fireEvent(accepted)
 
