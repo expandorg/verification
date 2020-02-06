@@ -88,13 +88,13 @@ verification-verify
     // if need payout ? 
     //   payoutVerifier
     scoreResponse()
-      ScoreResponse() (tx scope)
+      db.ScoreResponse() (tx scope)
         // Insert score
-        // Set response to accepted
+        // Set response to accepted/rejected
         // Delete verification assignment
         // Update task counters (pending)
         // Update user counters (accepted, rejected) 
-        // Update Assignment (svc)
+        // Update Assignment (svc) ??? 
 
       // payout or reject task (funding)
       // fireEvent(accepted)
@@ -106,8 +106,6 @@ verification-verify
         verificationsvc.VerifyAutomatic()
 
 [POST] /api/v1/responses/:responseID/verify
-  // Ensure verification is assigned
-
   settings = verificationsvc.settings()
 
   if settings.manual
@@ -117,7 +115,6 @@ verification-verify
     verificationsvc.SaveScore()
 
     // Set response to accepted
-    // Delete verification assignment
     // Update task counters (pending)
     // Update user counters (accepted, rejected) 
     // Update Assignment (svc)
