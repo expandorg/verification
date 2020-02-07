@@ -10,6 +10,8 @@ import (
 )
 
 type Storage interface {
+	GetResponseAssignment(responseID uint64, verifierID uint64) (*verification.Assignment, error)
+	Unassign(ID uint64) (*verification.Assignment, error)
 	GetResponses(verification.Params) (verification.Responses, error)
 	GetResponse(id string) (*verification.Response, error)
 	CreateResponse(r verification.NewResponse) (*verification.Response, error)
@@ -185,6 +187,13 @@ func (vs *VerificationStore) GetAssignments(p verification.Params) (verification
 	if err != nil {
 		return assignments, err
 	}
-
 	return assignments, nil
+}
+
+func (vs *VerificationStore) GetResponseAssignment(responseID uint64, verifierID uint64) (*verification.Assignment, error) {
+	return nil, nil
+}
+
+func (vs *VerificationStore) Unassign(ID uint64) (*verification.Assignment, error) {
+	return nil, nil
 }

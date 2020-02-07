@@ -86,11 +86,19 @@ func (s *service) VerifyManual(r verification.NewResponse, set *verification.Set
 		return nil, InvalidVerificationType{set.Manual}
 	}
 
+	// TOOD: wrap to tx-scope
+	assignment, err := s.store.GetResponseAssignment(r.ResponseID, uint64(r.VerifierID.Int64))
+	if err != nil {
+		return nil, Uniassigned{}
+	}
 	resp, err := s.CreateResponse(r)
 	if err != nil {
 		return nil, err
 	}
-
+	_, err = s.store.Unassign(assignment.ID)
+	if err != nil {
+		return nil, err
+	}
 	return resp, nil
 }
 

@@ -18,3 +18,11 @@ func (err InvalidVerificationType) Error() string {
 	}
 	return "This job has automatic verifcaiton"
 }
+
+type Uniassigned struct {
+	Manual bool
+}
+
+func (err Uniassigned) Error() string {
+	return "The user is not assigned to verificaton"
+}
