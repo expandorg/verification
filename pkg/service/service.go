@@ -4,6 +4,8 @@ import (
 	"github.com/gemsorg/verification/pkg/authentication"
 	"github.com/gemsorg/verification/pkg/authorization"
 	"github.com/gemsorg/verification/pkg/datastore"
+	"github.com/gemsorg/verification/pkg/externalsvc"
+	"github.com/gemsorg/verification/pkg/registrysvc"
 	"github.com/gemsorg/verification/pkg/verification"
 )
 
@@ -27,12 +29,16 @@ type VerificationService interface {
 type service struct {
 	store      datastore.Storage
 	authorizor authorization.Authorizer
+	registry   registrysvc.RegistrySVC
+	external   externalsvc.External
 }
 
-func New(s datastore.Storage, a authorization.Authorizer) *service {
+func New(s datastore.Storage, a authorization.Authorizer, r registrysvc.RegistrySVC, e externalsvc.External) *service {
 	return &service{
 		store:      s,
 		authorizor: a,
+		registry:   r,
+		external:   e,
 	}
 }
 
@@ -111,5 +117,20 @@ func (s *service) VerifyAutomatic(r verification.NewResponse, set *verification.
 		return nil, err
 	}
 
+	// reg := s.GetRegistration(r.JobID, registrysvc.ResponseVerifier)
+	// if reg != nil {
+	// 	s.external.Verify()
+	// } else {
+
+	// }
+
 	return resp, nil
+}
+
+func (s *service) GetRegistration(jobID uint64, svcType string) *registrysvc.Registration {
+	r, _ := s.registry.GetRegistration(jobID)
+	if r != nil && r.Services[svcType] != nil {
+		return r
+	}
+	return nil
 }

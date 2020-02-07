@@ -6,7 +6,7 @@ import (
 
 type Authorizer interface {
 	SetAuthData(data authentication.AuthData)
-	GetUserID() uint64
+	GetAuthToken() string
 }
 
 type authorizor struct {
@@ -23,6 +23,6 @@ func (a *authorizor) SetAuthData(data authentication.AuthData) {
 	a.authData = data
 }
 
-func (a *authorizor) GetUserID() uint64 {
-	return a.authData.UserID
+func (a *authorizor) GetAuthToken() string {
+	return a.authData.Token
 }

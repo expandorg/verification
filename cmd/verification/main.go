@@ -9,6 +9,8 @@ import (
 	"github.com/gemsorg/verification/pkg/authorization"
 	"github.com/gemsorg/verification/pkg/database"
 	"github.com/gemsorg/verification/pkg/datastore"
+	"github.com/gemsorg/verification/pkg/externalsvc"
+	"github.com/gemsorg/verification/pkg/registrysvc"
 	"github.com/gemsorg/verification/pkg/service"
 	"github.com/joho/godotenv"
 
@@ -36,7 +38,10 @@ func main() {
 	ds := datastore.NewDatastore(db)
 
 	authorizer := authorization.NewAuthorizer()
-	svc := service.New(ds, authorizer)
+	authToken := authorizer.GetAuthToken()
+	rsvc := registrysvc.New(authToken)
+	external := externalsvc.New(authToken)
+	svc := service.New(ds, authorizer, rsvc, external)
 	s := server.New(svc)
 	log.Println("info", fmt.Sprintf("Starting service on port 8186"))
 	http.Handle("/", s)
