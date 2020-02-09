@@ -59,8 +59,8 @@ func (vs *VerificationStore) GetResponse(id string) (*verification.Response, err
 
 func (vs *VerificationStore) CreateResponse(r verification.NewResponse) (*verification.Response, error) {
 	result, err := vs.DB.Exec(
-		"INSERT INTO verification_responses (`job_id`, `task_id`, `response_id`, `worker_id`, `verifier_id`, `value`, `reason`) VALUES (?,?,?,?,?,?,?)",
-		r.JobID, r.TaskID, r.ResponseID, r.WorkerID, r.VerifierID, r.Value, r.Reason,
+		"INSERT INTO verification_responses (`job_id`, `task_id`, `response_id`, `worker_id`, `verifier_id`, `accepted`, `reason`) VALUES (?,?,?,?,?,?,?)",
+		r.JobID, r.TaskID, r.ResponseID, r.WorkerID, r.VerifierID, r.Accepted, r.Reason,
 	)
 
 	if err != nil {

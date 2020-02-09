@@ -15,7 +15,7 @@ type Response struct {
 	ResponseID uint64       `db:"response_id" json:"response_id"`
 	WorkerID   uint64       `db:"worker_id" json:"worker_id"`
 	VerifierID nulls.Int64  `db:"verifier_id" json:"verifier_id"`
-	Value      bool         `db:"value" json:"value"`
+	Accepted   bool         `db:"accepted" json:"accepted"`
 	Reason     nulls.String `db:"reason" json:"reason"`
 	CreatedAt  time.Time    `db:"created_at" json:"created_at"`
 	UpdatedAt  time.Time    `db:"updated_at" json:"updated_at"`
@@ -30,7 +30,7 @@ type NewResponse struct {
 	TaskID     uint64       `json:"task_id"`
 	ResponseID uint64       `json:"response_id"`
 	WorkerID   uint64       `json:"worker_id"`
-	Value      bool         `json:"value"`
+	Accepted   bool         `json:"accepted"`
 	VerifierID nulls.Int64  `json:"verifier_id"`
 	Reason     nulls.String `json:"reason"`
 }
