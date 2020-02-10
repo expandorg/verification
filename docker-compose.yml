@@ -7,4 +7,4 @@ services:
       MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
       MYSQL_DATABASE: verification
     ports:
-      - '3306:3306'
+      - '3314:3306'
