@@ -12,16 +12,14 @@ import (
 type VerificationService interface {
 	Healthy() bool
 	SetAuthData(data authentication.AuthData)
-
+	GetAssignments(verification.Params) (verification.Assignments, error)
+	GetAssignment(id string) (*verification.Assignment, error)
 	Assign(r verification.NewAssignment, set *verification.Settings) (*verification.Assignment, error)
-
 	VerifyManual(r verification.NewResponse, set *verification.Settings) (*verification.Response, error)
 	VerifyAutomatic(r verification.NewResponse, set *verification.Settings) (*verification.Response, error)
-
 	GetResponses(verification.Params) (verification.Responses, error)
 	GetResponse(id string) (*verification.Response, error)
 	CreateResponse(n verification.NewResponse) (*verification.Response, error)
-
 	GetSettings(jobID uint64) (*verification.Settings, error)
 	CreateSettings(verification.Settings) (*verification.Settings, error)
 }
@@ -133,4 +131,12 @@ func (s *service) GetRegistration(jobID uint64, svcType string) *registrysvc.Reg
 		return r
 	}
 	return nil
+}
+
+func (s *service) GetAssignments(p verification.Params) (verification.Assignments, error) {
+	return s.store.GetAssignments(p)
+}
+
+func (s *service) GetAssignment(id string) (*verification.Assignment, error) {
+	return s.store.GetAssignment(id)
 }
