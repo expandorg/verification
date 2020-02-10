@@ -37,9 +37,11 @@ type NewResponse struct {
 
 // Params for querying responses
 type Params struct {
-	WorkerID string
-	JobID    string
-	TaskID   string
+	WorkerID   string
+	VerifierID string
+	JobID      string
+	TaskID     string
+	ResponseID string
 }
 
 // ToQueryCondition converts Params to sql query condition

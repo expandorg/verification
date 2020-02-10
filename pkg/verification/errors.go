@@ -1,12 +1,4 @@
-package service
-
-type AssignmentNotAllowed struct {
-	Manual bool
-}
-
-func (err AssignmentNotAllowed) Error() string {
-	return "This assignment is not allowed"
-}
+package verification
 
 type InvalidVerificationType struct {
 	Manual bool

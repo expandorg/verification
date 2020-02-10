@@ -68,11 +68,17 @@ func (s *service) CreateSettings(set verification.Settings) (*verification.Setti
 	return s.store.CreateSettings(set)
 }
 
-func (s *service) Assign(r verification.NewAssignment, set *verification.Settings) (*verification.Assignment, error) {
-	if !set.Manual {
-		return nil, InvalidVerificationType{set.Manual}
+func (s *service) Assign(a verification.NewAssignment, set *verification.Settings) (*verification.Assignment, error) {
+	asgn := verification.New(&a, nil)
+	allowed, err := asgn.IsAllowed(set)
+	if err != nil {
+		return nil, err
 	}
-	return nil, nil
+	if !allowed {
+		return nil, AssignmentNotAllowed{}
+	}
+
+	return s.store.CreateAssignment(&a)
 }
 
 func (s *service) VerifyManual(r verification.NewResponse, set *verification.Settings) (*verification.Response, error) {

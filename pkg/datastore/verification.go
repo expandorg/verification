@@ -2,6 +2,7 @@ package datastore
 
 import (
 	"strconv"
+	"strings"
 
 	"github.com/gemsorg/verification/pkg/verification"
 	"github.com/go-sql-driver/mysql"
@@ -15,6 +16,9 @@ type Storage interface {
 	GetSettings(jobID uint64) (*verification.Settings, error)
 	CreateSettings(s verification.Settings) (*verification.Settings, error)
 	GetWhitelist(jobID uint64, verifierID uint64) (*verification.Whitelist, error)
+	CreateAssignment(*verification.NewAssignment) (*verification.Assignment, error)
+	GetAssignment(id string) (*verification.Assignment, error)
+	GetAssignments(verification.Params) (verification.Assignments, error)
 }
 
 type VerificationStore struct {
@@ -107,4 +111,80 @@ func (vs *VerificationStore) GetWhitelist(jobID uint64, verifierID uint64) (*ver
 		return nil, err
 	}
 	return wl, nil
+}
+
+func (vs *VerificationStore) GetAssignment(id string) (*verification.Assignment, error) {
+	assignment := &verification.Assignment{}
+	err := vs.DB.Get(assignment, "SELECT * FROM assignments WHERE id = ?", id)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return assignment, nil
+}
+
+func (vs *VerificationStore) CreateAssignment(a *verification.NewAssignment) (*verification.Assignment, error) {
+	result, err := vs.DB.Exec(
+		"INSERT INTO assignments (job_id, task_id, verifier_id, active, expires_at) VALUES (?,?,?,?,DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR))",
+		a.JobID, a.TaskID, a.VerifierID, 1)
+
+	if err != nil {
+		if err != nil {
+			mysqlerr, ok := err.(*mysql.MySQLError)
+			// duplicate entry verifier_id & job_id
+			if ok && mysqlerr.Number == 1062 {
+				return nil, AlreadyAssigned{}
+			}
+		}
+		return nil, err
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	assi, err := vs.GetAssignment(strconv.FormatInt(id, 10))
+
+	if err != nil {
+		return nil, err
+	}
+
+	return assi, nil
+}
+
+func (vs *VerificationStore) GetAssignments(p verification.Params) (verification.Assignments, error) {
+	assignments := verification.Assignments{}
+	query := "SELECT * FROM assignments"
+	paramsQuery := []string{}
+	args := []interface{}{}
+
+	if p.VerifierID != "" && p.VerifierID != "0" {
+		args = append(args, p.VerifierID)
+		paramsQuery = append(paramsQuery, "verifier_id=?")
+	}
+	if p.JobID != "" && p.JobID != "0" {
+		args = append(args, p.JobID)
+		paramsQuery = append(paramsQuery, "job_id=?")
+	}
+	if p.TaskID != "" && p.TaskID != "0" {
+		args = append(args, p.TaskID)
+		paramsQuery = append(paramsQuery, "task_id=?")
+	}
+	if p.ResponseID != "" && p.ResponseID != "0" {
+		args = append(args, p.ResponseID)
+		paramsQuery = append(paramsQuery, "response_id=?")
+	}
+
+	if len(paramsQuery) > 0 {
+		query = query + " Where " + strings.Join(paramsQuery, " AND ")
+	}
+
+	err := vs.DB.Select(&assignments, query, args...)
+	if err != nil {
+		return assignments, err
+	}
+
+	return assignments, nil
 }

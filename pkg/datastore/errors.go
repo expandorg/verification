@@ -17,3 +17,9 @@ type NoRowErr struct{}
 func (err NoRowErr) Error() string {
 	return "No Records"
 }
+
+type AlreadyAssigned struct{}
+
+func (err AlreadyAssigned) Error() string {
+	return "User is already assigned a task from this job"
+}
