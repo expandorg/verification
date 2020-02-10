@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gemsorg/verification/pkg/authorization"
+	"github.com/gemsorg/verification/pkg/automatic"
 	"github.com/gemsorg/verification/pkg/database"
 	"github.com/gemsorg/verification/pkg/datastore"
 	"github.com/gemsorg/verification/pkg/externalsvc"
@@ -41,7 +42,9 @@ func main() {
 	authToken := authorizer.GetAuthToken()
 	rsvc := registrysvc.New(authToken)
 	external := externalsvc.New(authToken)
-	svc := service.New(ds, authorizer, rsvc, external)
+
+	consensus = automatic.NewConsensus(ds)
+	svc := service.New(ds, authorizer, rsvc, external, consensus)
 	s := server.New(svc)
 	log.Println("info", fmt.Sprintf("Starting service on port 8186"))
 	http.Handle("/", s)

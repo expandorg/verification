@@ -3,6 +3,7 @@ package service
 import (
 	"github.com/gemsorg/verification/pkg/authentication"
 	"github.com/gemsorg/verification/pkg/authorization"
+	"github.com/gemsorg/verification/pkg/automatic"
 	"github.com/gemsorg/verification/pkg/datastore"
 	"github.com/gemsorg/verification/pkg/externalsvc"
 	"github.com/gemsorg/verification/pkg/registrysvc"
@@ -29,14 +30,16 @@ type service struct {
 	authorizor authorization.Authorizer
 	registry   registrysvc.RegistrySVC
 	external   externalsvc.External
+	consensus  automatic.Consensus
 }
 
-func New(s datastore.Storage, a authorization.Authorizer, r registrysvc.RegistrySVC, e externalsvc.External) *service {
+func New(s datastore.Storage, a authorization.Authorizer, r registrysvc.RegistrySVC, e externalsvc.External, c automatic.Consensus) *service {
 	return &service{
 		store:      s,
 		authorizor: a,
 		registry:   r,
 		external:   e,
+		consensus:  c,
 	}
 }
 
@@ -115,12 +118,12 @@ func (s *service) VerifyAutomatic(r verification.NewResponse, set *verification.
 		return nil, err
 	}
 
-	// reg := s.GetRegistration(r.JobID, registrysvc.ResponseVerifier)
-	// if reg != nil {
-	// 	s.external.Verify()
-	// } else {
-
-	// }
+	reg := s.GetRegistration(r.JobID, registrysvc.ResponseVerifier)
+	if reg != nil {
+		s.external.Verify(reg, r)
+	} else {
+		s.consensus.Verify()
+	}
 
 	return resp, nil
 }
