@@ -12,6 +12,7 @@ import (
 	"github.com/gemsorg/verification/pkg/datastore"
 	"github.com/gemsorg/verification/pkg/externalsvc"
 	"github.com/gemsorg/verification/pkg/registrysvc"
+	"github.com/gemsorg/verification/pkg/responsesvc"
 	"github.com/gemsorg/verification/pkg/service"
 	"github.com/joho/godotenv"
 
@@ -40,9 +41,11 @@ func main() {
 
 	authorizer := authorization.NewAuthorizer()
 	authToken := authorizer.GetAuthToken()
+
 	rsvc := registrysvc.New(authToken)
 	external := externalsvc.New(authToken)
-	consensus := automatic.NewConsensus(ds)
+	responseSVC := responsesvc.New(authToken)
+	consensus := automatic.NewConsensus(ds, responseSVC)
 
 	svc := service.New(ds, authorizer, rsvc, external, consensus)
 	s := server.New(svc)

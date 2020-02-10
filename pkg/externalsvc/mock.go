@@ -36,7 +36,7 @@ func (m *MockExternal) EXPECT() *MockExternalMockRecorder {
 }
 
 // Verify mocks base method
-func (m *MockExternal) Verify(reg registrysvc.Registration, r verification.NewResponse) (*VerifyResponse, error) {
+func (m *MockExternal) Verify(reg *registrysvc.Registration, r verification.NewResponse) (*VerifyResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Verify", reg, r)
 	ret0, _ := ret[0].(*VerifyResponse)
@@ -44,8 +44,8 @@ func (m *MockExternal) Verify(reg registrysvc.Registration, r verification.NewRe
 	return ret0, ret1
 }
 
-// Verify indicates an expected call of Validate
-func (mr *MockExternalMockRecorder) Validate(reg, a interface{}) *gomock.Call {
+// Verify indicates an expected call of Verify
+func (mr *MockExternalMockRecorder) Verify(reg, r interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Verify", reflect.TypeOf((*MockExternal)(nil).Verify), reg, a)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Verify", reflect.TypeOf((*MockExternal)(nil).Verify), reg, r)
 }

@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/gemsorg/verification/pkg/authorization"
+	"github.com/gemsorg/verification/pkg/automatic"
 	"github.com/gemsorg/verification/pkg/datastore"
 	"github.com/gemsorg/verification/pkg/externalsvc"
 	"github.com/gemsorg/verification/pkg/registrysvc"
@@ -17,6 +18,7 @@ func TestNew(t *testing.T) {
 	ds := &datastore.VerificationStore{}
 	registry := registrysvc.NewMockRegistrySVC(ctrl)
 	external := externalsvc.NewMockExternal(ctrl)
+	consensus := automatic.NewMockConsensus(ctrl)
 
 	type args struct {
 		s *datastore.VerificationStore
@@ -29,12 +31,12 @@ func TestNew(t *testing.T) {
 		{
 			"it creates a new service",
 			args{s: ds},
-			&service{ds, authorizer, registry, external},
+			&service{ds, authorizer, registry, external, consensus},
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := New(tt.args.s, authorizer, registry, external)
+			got := New(tt.args.s, authorizer, registry, external, consensus)
 			assert.Equal(t, got, tt.want, tt.name)
 		})
 	}
