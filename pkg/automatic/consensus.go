@@ -1,7 +1,12 @@
 package automatic
 
+import (
+	"github.com/gemsorg/verification/pkg/datastore"
+	"github.com/gemsorg/verification/pkg/verification"
+)
+
 type Consensus interface {
-	Verify() (bool, error)
+	Verify(r verification.NewResponse, set *verification.Settings) (bool, error)
 }
 
 type consensus struct {
@@ -9,14 +14,11 @@ type consensus struct {
 }
 
 func NewConsensus(s datastore.Storage) Consensus {
-	return &consenus{
-		store:      s,
-		authorizor: a,
-		registry:   r,
-		external:   e,
+	return &consensus{
+		store: s,
 	}
 }
 
-func (s *consensus) Verify() (bool, error) {
+func (s *consensus) Verify(r verification.NewResponse, set *verification.Settings) (bool, error) {
 	return true, nil
 }

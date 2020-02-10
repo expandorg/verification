@@ -122,7 +122,7 @@ func (s *service) VerifyAutomatic(r verification.NewResponse, set *verification.
 	if reg != nil {
 		s.external.Verify(reg, r)
 	} else {
-		s.consensus.Verify()
+		s.consensus.Verify(r, set)
 	}
 
 	return resp, nil

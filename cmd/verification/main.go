@@ -42,8 +42,8 @@ func main() {
 	authToken := authorizer.GetAuthToken()
 	rsvc := registrysvc.New(authToken)
 	external := externalsvc.New(authToken)
+	consensus := automatic.NewConsensus(ds)
 
-	consensus = automatic.NewConsensus(ds)
 	svc := service.New(ds, authorizer, rsvc, external, consensus)
 	s := server.New(svc)
 	log.Println("info", fmt.Sprintf("Starting service on port 8186"))
