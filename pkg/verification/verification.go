@@ -48,6 +48,8 @@ type TaskResponse struct {
 	IsAccepted nulls.Bool      `json:"is_accepted"`
 }
 
+type TaskResponses []TaskResponse
+
 // Params for querying responses
 type Params struct {
 	WorkerID   string
@@ -89,12 +91,11 @@ func (n NewVerificationResponse) ToVerificationResponse() VerificationResponse {
 	}
 }
 
-func (t TaskResponse) ToVerificationResponse() VerificationResponse {
-	return VerificationResponse{
-		JobID:      t.JobID,
-		TaskID:     t.TaskID,
-		ResponseID: t.ID,
-		WorkerID:   t.WorkerID,
-		Accepted:   false,
+func (rs TaskResponses) Has(resp TaskResponse) bool {
+	for _, r := range rs {
+		if r.ID == resp.ID {
+			return true
+		}
 	}
+	return false
 }

@@ -4,39 +4,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
-	"time"
 
-	"github.com/gemsorg/verification/pkg/nulls"
+	"github.com/gemsorg/verification/pkg/verification"
 )
 
 type ResponseSVC interface {
-	GetPending(jobID uint64, taskID uint64) (Responses, error)
+	GetPending(jobID uint64, taskID uint64) (verification.TaskResponses, error)
 }
 
 type PendingResult struct {
-	Responses Responses `json:"responses"`
-}
-
-type Response struct {
-	ID         uint64          `json:"id"`
-	CreatedAt  time.Time       `json:"created_at"`
-	UpdatedAt  time.Time       `json:"updated_at"`
-	WorkerID   uint64          `json:"worker_id"`
-	JobID      uint64          `json:"job_id"`
-	TaskID     uint64          `json:"task_id"`
-	Value      json.RawMessage `json:"value"`
-	IsAccepted nulls.Bool      `json:"is_accepted"`
-}
-
-type Responses []Response
-
-func (rs Responses) Has(resp Response) bool {
-	for _, r := range rs {
-		if r.ID == resp.ID {
-			return true
-		}
-	}
-	return false
+	Responses verification.TaskResponses `json:"responses"`
 }
 
 func NormalizeRawMessage(raw json.RawMessage) (string, error) {

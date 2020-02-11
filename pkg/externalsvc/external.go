@@ -12,19 +12,18 @@ import (
 )
 
 type External interface {
-	Verify(reg *registrysvc.Registration, resp verification.TaskResponse) (*VerifyResponse, error)
-}
-
-type VerifyResponse struct {
-	Results []VerificationResult `json:"results"`
+	Verify(reg *registrysvc.Registration, resp verification.TaskResponse) (VerificationResults, error)
 }
 
 type VerificationResult struct {
 	JobID      uint64 `json:"job_id"`
 	TaskID     uint64 `json:"task_id"`
+	WorkerID   uint64 `json:"worker_id"`
 	ResponseID uint64 `json:"response_id"`
-	Accepted   bool   `json:"accepted`
+	Accepted   bool   `json:"accepted"`
 }
+
+type VerificationResults []VerificationResult
 
 type external struct {
 	AuthToken string
@@ -36,7 +35,7 @@ func New(authToken string) *external {
 	}
 }
 
-func (e *external) Verify(reg *registrysvc.Registration, resp verification.TaskResponse) (*VerifyResponse, error) {
+func (e *external) Verify(reg *registrysvc.Registration, resp verification.TaskResponse) (VerificationResults, error) {
 	url := reg.Services[registrysvc.ResponseVerifier].URL
 	requestByte, _ := json.Marshal(resp)
 	reqBody := bytes.NewReader(requestByte)
@@ -44,12 +43,12 @@ func (e *external) Verify(reg *registrysvc.Registration, resp verification.TaskR
 	if err != nil {
 		return nil, err
 	}
-	vresp := VerifyResponse{}
+	vresp := VerificationResults{}
 	err = json.Unmarshal(res, &vresp)
 	if err != nil {
 		return nil, err
 	}
-	return &vresp, nil
+	return vresp, nil
 }
 
 func serviceRequest(action, url, key string, userID uint64, reqBody io.Reader) ([]byte, error) {
@@ -75,4 +74,22 @@ func serviceRequest(action, url, key string, userID uint64, reqBody io.Reader) (
 	}
 
 	return body, nil
+}
+
+func (vr *VerificationResult) ToVerificationResponse() verification.VerificationResponse {
+	return verification.VerificationResponse{
+		JobID:      vr.JobID,
+		TaskID:     vr.TaskID,
+		ResponseID: vr.ResponseID,
+		WorkerID:   vr.WorkerID,
+		Accepted:   vr.Accepted,
+	}
+}
+
+func (vrs VerificationResults) ToVerificationResponses() verification.VerificationResponses {
+	results := make(verification.VerificationResponses, len(vrs))
+	for i, vr := range vrs {
+		results[i] = vr.ToVerificationResponse()
+	}
+	return results
 }

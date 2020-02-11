@@ -8,10 +8,10 @@ import (
 )
 
 type Consensus interface {
-	Verify(r verification.TaskResponse, set *verification.Settings) (*externalsvc.VerifyResponse, error)
+	Verify(r verification.TaskResponse, set *verification.Settings) (externalsvc.VerificationResults, error)
 }
 
-type ResponsesMap map[string]responsesvc.Responses
+type ResponsesMap map[string]verification.TaskResponses
 
 type consensus struct {
 	store       datastore.Storage
@@ -25,8 +25,8 @@ func NewConsensus(s datastore.Storage, rs responsesvc.ResponseSVC) Consensus {
 	}
 }
 
-func (s *consensus) Verify(r verification.TaskResponse, set *verification.Settings) (*externalsvc.VerifyResponse, error) {
-	results := externalsvc.VerifyResponse{}
+func (s *consensus) Verify(r verification.TaskResponse, set *verification.Settings) (externalsvc.VerificationResults, error) {
+	results := externalsvc.VerificationResults{}
 
 	responses, err := s.responseSVC.GetPending(r.JobID, r.TaskID)
 	if err != nil {
@@ -43,7 +43,7 @@ func (s *consensus) Verify(r verification.TaskResponse, set *verification.Settin
 
 	consensus := grouped.Conesensus(set.AgreementCount.Int64)
 	if consensus == nil {
-		return &results, nil
+		return results, nil
 	}
 
 	for _, rsp := range responses {
@@ -51,15 +51,16 @@ func (s *consensus) Verify(r verification.TaskResponse, set *verification.Settin
 			JobID:      rsp.JobID,
 			TaskID:     rsp.TaskID,
 			ResponseID: rsp.ID,
+			WorkerID:   rsp.WorkerID,
 			Accepted:   consensus.Has(rsp),
 		}
-		results.Results = append(results.Results, r)
+		results = append(results, r)
 	}
-	return &results, nil
+	return results, nil
 }
 
-func (rm ResponsesMap) Conesensus(agreementCount int64) responsesvc.Responses {
-	var leaders responsesvc.Responses = nil
+func (rm ResponsesMap) Conesensus(agreementCount int64) verification.TaskResponses {
+	var leaders verification.TaskResponses = nil
 	var leadersLen int64 = 0
 
 	for _, responses := range rm {
@@ -73,7 +74,7 @@ func (rm ResponsesMap) Conesensus(agreementCount int64) responsesvc.Responses {
 	return leaders
 }
 
-func groupByRawMessage(rs responsesvc.Responses) (ResponsesMap, error) {
+func groupByRawMessage(rs verification.TaskResponses) (ResponsesMap, error) {
 	result := ResponsesMap{}
 	for _, r := range rs {
 		normalized, err := responsesvc.NormalizeRawMessage(r.Value)
@@ -82,7 +83,7 @@ func groupByRawMessage(rs responsesvc.Responses) (ResponsesMap, error) {
 		}
 
 		if result[normalized] == nil {
-			result[normalized] = responsesvc.Responses{r}
+			result[normalized] = verification.TaskResponses{r}
 		} else {
 			result[normalized] = append(result[normalized], r)
 		}

@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"github.com/gemsorg/verification/pkg/apierror"
+	"github.com/gemsorg/verification/pkg/verification"
 )
 
 type responsesvc struct {
@@ -22,7 +23,7 @@ func New(token string) ResponseSVC {
 	}
 }
 
-func (rs *responsesvc) GetPending(jobID uint64, taskID uint64) (Responses, error) {
+func (rs *responsesvc) GetPending(jobID uint64, taskID uint64) (verification.TaskResponses, error) {
 	r := PendingResult{}
 
 	route := fmt.Sprintf("/jobs/%d/task/%d/responses/pending", jobID, taskID)

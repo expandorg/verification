@@ -10,11 +10,12 @@ import (
 )
 
 type Storage interface {
-	GetResponseAssignment(responseID uint64, verifierID uint64) (*verification.Assignment, error)
+	GetAssignmentByResponseAndVerifier(responseID uint64, verifierID uint64) (*verification.Assignment, error)
 	Unassign(ID uint64) (*verification.Assignment, error)
 	GetResponses(verification.Params) (verification.VerificationResponses, error)
 	GetResponse(id string) (*verification.VerificationResponse, error)
 	CreateResponse(r verification.VerificationResponse) (*verification.VerificationResponse, error)
+	CreateResponses(rs verification.VerificationResponses) (verification.VerificationResponses, error)
 	GetSettings(jobID uint64) (*verification.Settings, error)
 	CreateSettings(s verification.Settings) (*verification.Settings, error)
 	GetWhitelist(jobID uint64, verifierID uint64) (*verification.Whitelist, error)
@@ -49,8 +50,12 @@ func (vs *VerificationStore) GetResponses(p verification.Params) (verification.V
 }
 
 func (vs *VerificationStore) GetResponse(id string) (*verification.VerificationResponse, error) {
+	return vs.getResponse(vs.DB, id)
+}
+
+func (vs *VerificationStore) getResponse(db DbQueryExecutor, id string) (*verification.VerificationResponse, error) {
 	r := &verification.VerificationResponse{}
-	err := vs.DB.Get(r, "SELECT * FROM verification_responses WHERE id = ?", id)
+	err := db.Get(r, "SELECT * FROM verification_responses WHERE id = ?", id)
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +63,32 @@ func (vs *VerificationStore) GetResponse(id string) (*verification.VerificationR
 }
 
 func (vs *VerificationStore) CreateResponse(r verification.VerificationResponse) (*verification.VerificationResponse, error) {
-	result, err := vs.DB.Exec(
+	return vs.createResponse(vs.DB, r)
+}
+
+func (vs *VerificationStore) CreateResponses(rs verification.VerificationResponses) (verification.VerificationResponses, error) {
+	responses := make(verification.VerificationResponses, len(rs))
+
+	tx, err := vs.DB.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	for i, r := range rs {
+		vr, err := vs.createResponse(tx, r)
+		if err != nil {
+			return nil, vs.tryRollback(tx, err)
+		}
+		responses[i] = *vr
+	}
+	err = tx.Commit()
+	if err != nil {
+		return nil, err
+	}
+	return responses, nil
+}
+
+func (vs *VerificationStore) createResponse(db DbQueryExecutor, r verification.VerificationResponse) (*verification.VerificationResponse, error) {
+	result, err := db.Exec(
 		"INSERT INTO verification_responses (`job_id`, `task_id`, `response_id`, `worker_id`, `verifier_id`, `accepted`, `reason`) VALUES (?,?,?,?,?,?,?)",
 		r.JobID, r.TaskID, r.ResponseID, r.WorkerID, r.VerifierID, r.Accepted, r.Reason,
 	)
@@ -76,7 +106,7 @@ func (vs *VerificationStore) CreateResponse(r verification.VerificationResponse)
 	if err != nil {
 		return nil, err
 	}
-	return vs.GetResponse(strconv.FormatInt(id, 10))
+	return vs.getResponse(db, strconv.FormatInt(id, 10))
 }
 
 func (vs *VerificationStore) GetSettings(jobID uint64) (*verification.Settings, error) {
@@ -123,6 +153,15 @@ func (vs *VerificationStore) GetAssignment(id string) (*verification.Assignment,
 		return nil, err
 	}
 
+	return assignment, nil
+}
+
+func (vs *VerificationStore) GetAssignmentByResponseAndVerifier(responseID uint64, verifierID uint64) (*verification.Assignment, error) {
+	assignment := &verification.Assignment{}
+	err := vs.DB.Get(assignment, "SELECT * FROM assignments WHERE response_id = ? AND verifier_id = ?", responseID, verifierID)
+	if err != nil {
+		return nil, err
+	}
 	return assignment, nil
 }
 
@@ -190,10 +229,20 @@ func (vs *VerificationStore) GetAssignments(p verification.Params) (verification
 	return assignments, nil
 }
 
-func (vs *VerificationStore) GetResponseAssignment(responseID uint64, verifierID uint64) (*verification.Assignment, error) {
+func (vs *VerificationStore) Unassign(ID uint64) (*verification.Assignment, error) {
 	return nil, nil
 }
 
-func (vs *VerificationStore) Unassign(ID uint64) (*verification.Assignment, error) {
-	return nil, nil
+type DbQueryExecutor interface {
+	sqlx.Execer
+	sqlx.Queryer
+	Get(dest interface{}, query string, args ...interface{}) error
+}
+
+func (vs *VerificationStore) tryRollback(tx *sqlx.Tx, err error) error {
+	roolbackErr := tx.Rollback()
+	if roolbackErr != nil {
+		return roolbackErr
+	}
+	return err
 }

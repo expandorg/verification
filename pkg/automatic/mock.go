@@ -36,10 +36,10 @@ func (m *MockConsensus) EXPECT() *MockConsensusMockRecorder {
 }
 
 // Verify mocks base method
-func (m *MockConsensus) Verify(r verification.TaskResponse, set *verification.Settings) (*externalsvc.VerifyResponse, error) {
+func (m *MockConsensus) Verify(r verification.TaskResponse, set *verification.Settings) (externalsvc.VerificationResults, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Verify", r, set)
-	ret0, _ := ret[0].(*externalsvc.VerifyResponse)
+	ret0, _ := ret[0].([]externalsvc.VerificationResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
