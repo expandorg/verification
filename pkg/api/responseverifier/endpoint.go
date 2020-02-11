@@ -15,7 +15,7 @@ func makeAutomaticEndpoint(svc service.VerificationService) endpoint.Endpoint {
 		data, _ := authentication.ParseAuthData(ctx)
 		svc.SetAuthData(data)
 
-		req := request.(verification.NewResponse)
+		req := request.(verification.TaskResponse)
 		settings, err := svc.GetSettings(req.JobID)
 		if err != nil {
 			return nil, err
@@ -33,7 +33,7 @@ func makeManualEndpoint(svc service.VerificationService) endpoint.Endpoint {
 		data, _ := authentication.ParseAuthData(ctx)
 		svc.SetAuthData(data)
 
-		req := request.(verification.NewResponse)
+		req := request.(verification.NewVerificationResponse)
 		settings, err := svc.GetSettings(req.JobID)
 		if err != nil {
 			return nil, err

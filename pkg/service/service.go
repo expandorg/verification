@@ -1,13 +1,14 @@
 package service
 
 import (
-	"github.com/gemsorg/verification/pkg/authentication"
-	"github.com/gemsorg/verification/pkg/authorization"
-	"github.com/gemsorg/verification/pkg/automatic"
-	"github.com/gemsorg/verification/pkg/datastore"
-	"github.com/gemsorg/verification/pkg/externalsvc"
-	"github.com/gemsorg/verification/pkg/registrysvc"
-	"github.com/gemsorg/verification/pkg/verification"
+	"github.com/expandorg/verification/pkg/authentication"
+	"github.com/expandorg/verification/pkg/authorization"
+	"github.com/expandorg/verification/pkg/automatic"
+	"github.com/expandorg/verification/pkg/datastore"
+	"github.com/expandorg/verification/pkg/externalsvc"
+	"github.com/expandorg/verification/pkg/nulls"
+	"github.com/expandorg/verification/pkg/registrysvc"
+	"github.com/expandorg/verification/pkg/verification"
 )
 
 type VerificationService interface {
@@ -16,11 +17,13 @@ type VerificationService interface {
 	GetAssignments(verification.Params) (verification.Assignments, error)
 	GetAssignment(id string) (*verification.Assignment, error)
 	Assign(r verification.NewAssignment, set *verification.Settings) (*verification.Assignment, error)
-	VerifyManual(r verification.NewResponse, set *verification.Settings) (*verification.Response, error)
-	VerifyAutomatic(r verification.NewResponse, set *verification.Settings) (*verification.Response, error)
-	GetResponses(verification.Params) (verification.Responses, error)
-	GetResponse(id string) (*verification.Response, error)
-	CreateResponse(n verification.NewResponse) (*verification.Response, error)
+
+	VerifyManual(r verification.NewVerificationResponse, set *verification.Settings) (*verification.VerificationResponse, error)
+	VerifyAutomatic(r verification.TaskResponse, set *verification.Settings) (verification.VerificationResponses, error)
+
+	GetResponses(verification.Params) (verification.VerificationResponses, error)
+	GetResponse(id string) (*verification.VerificationResponse, error)
+
 	GetSettings(jobID uint64) (*verification.Settings, error)
 	CreateSettings(verification.Settings) (*verification.Settings, error)
 }
@@ -51,16 +54,12 @@ func (s *service) SetAuthData(data authentication.AuthData) {
 	s.authorizor.SetAuthData(data)
 }
 
-func (s *service) GetResponses(p verification.Params) (verification.Responses, error) {
+func (s *service) GetResponses(p verification.Params) (verification.VerificationResponses, error) {
 	return s.store.GetResponses(p)
 }
 
-func (s *service) GetResponse(id string) (*verification.Response, error) {
+func (s *service) GetResponse(id string) (*verification.VerificationResponse, error) {
 	return s.store.GetResponse(id)
-}
-
-func (s *service) CreateResponse(n verification.NewResponse) (*verification.Response, error) {
-	return s.store.CreateResponse(n)
 }
 
 func (s *service) GetSettings(jobID uint64) (*verification.Settings, error) {
@@ -88,44 +87,59 @@ func (s *service) Assign(a verification.NewAssignment, set *verification.Setting
 	return s.store.CreateAssignment(&a)
 }
 
-func (s *service) VerifyManual(r verification.NewResponse, set *verification.Settings) (*verification.Response, error) {
+func (s *service) VerifyManual(r verification.NewVerificationResponse, set *verification.Settings) (*verification.VerificationResponse, error) {
 	if !set.Manual {
 		return nil, InvalidVerificationType{set.Manual}
 	}
 
-	// TOOD: wrap to tx-scope
-	assignment, err := s.store.GetResponseAssignment(r.ResponseID, uint64(r.VerifierID.Int64))
+	// check that verifier is assigned
+	assignment, err := s.store.GetAssignmentByResponseAndVerifier(r.ResponseID, r.VerifierID)
 	if err != nil {
 		return nil, Uniassigned{}
 	}
-	resp, err := s.CreateResponse(r)
+	resp, err := s.store.CreateResponse(r.ToVerificationResponse())
 	if err != nil {
 		return nil, err
 	}
-	_, err = s.store.Unassign(assignment.ID)
+	// unassign verification
+	assignment.Active = nulls.NewBool(false)
+	_, err = s.store.UpdateAssignment(assignment)
 	if err != nil {
 		return nil, err
 	}
 	return resp, nil
 }
 
-func (s *service) VerifyAutomatic(r verification.NewResponse, set *verification.Settings) (*verification.Response, error) {
+func (s *service) VerifyAutomatic(r verification.TaskResponse, set *verification.Settings) (verification.VerificationResponses, error) {
 	if set.Manual {
 		return nil, InvalidVerificationType{set.Manual}
 	}
-	resp, err := s.CreateResponse(r)
+
+	vrs, err := s.callAutomaticVerification(r, set)
 	if err != nil {
 		return nil, err
 	}
 
-	reg := s.GetRegistration(r.JobID, registrysvc.ResponseVerifier)
-	if reg != nil {
-		s.external.Verify(reg, r)
-	} else {
-		s.consensus.Verify(r, set)
+	if len(vrs) == 0 {
+		// Nothing to verify
+		return verification.VerificationResponses{}, nil
 	}
 
-	return resp, nil
+	// create responses
+	// TODO: implement response verification (jobId, taskId, responseID, workerId)
+	responses, err := s.store.CreateResponses(vrs.ToVerificationResponses())
+	if err != nil {
+		return nil, err
+	}
+	return responses, nil
+}
+
+func (s *service) callAutomaticVerification(r verification.TaskResponse, set *verification.Settings) (externalsvc.VerificationResults, error) {
+	reg := s.GetRegistration(r.JobID, registrysvc.ResponseVerifier)
+	if reg != nil {
+		return s.external.Verify(reg, r)
+	}
+	return s.consensus.Verify(r, set)
 }
 
 func (s *service) GetRegistration(jobID uint64, svcType string) *registrysvc.Registration {

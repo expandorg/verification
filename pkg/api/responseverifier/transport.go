@@ -14,7 +14,7 @@ import (
 func MakeAutomaticHandler(s service.VerificationService) http.Handler {
 	return kithttp.NewServer(
 		makeAutomaticEndpoint(s),
-		decodeRequest,
+		decodeAutomaticRequest,
 		encodeResponse,
 	)
 }
@@ -22,7 +22,7 @@ func MakeAutomaticHandler(s service.VerificationService) http.Handler {
 func MakeManualHandler(s service.VerificationService) http.Handler {
 	return kithttp.NewServer(
 		makeManualEndpoint(s),
-		decodeRequest,
+		decodeManualRequest,
 		encodeResponse,
 	)
 }
@@ -32,12 +32,22 @@ func encodeResponse(ctx context.Context, w http.ResponseWriter, response interfa
 	return json.NewEncoder(w).Encode(response)
 }
 
-func decodeRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var a verification.NewResponse
+func decodeAutomaticRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var tr verification.TaskResponse
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&a)
+	err := decoder.Decode(&tr)
 	if err != nil {
 		return nil, apierror.New(500, err.Error(), err)
 	}
-	return a, nil
+	return tr, nil
+}
+
+func decodeManualRequest(_ context.Context, r *http.Request) (interface{}, error) {
+	var v verification.NewVerificationResponse
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&v)
+	if err != nil {
+		return nil, apierror.New(500, err.Error(), err)
+	}
+	return v, nil
 }

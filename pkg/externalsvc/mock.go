@@ -36,7 +36,7 @@ func (m *MockExternal) EXPECT() *MockExternalMockRecorder {
 }
 
 // Verify mocks base method
-func (m *MockExternal) Verify(reg *registrysvc.Registration, r verification.NewResponse) (*VerifyResponse, error) {
+func (m *MockExternal) Verify(reg *registrysvc.Registration, r verification.TaskResponse) (*VerifyResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Verify", reg, r)
 	ret0, _ := ret[0].(*VerifyResponse)

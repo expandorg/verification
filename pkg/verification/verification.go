@@ -1,14 +1,15 @@
 package verification
 
 import (
+	"encoding/json"
 	"strings"
 	"time"
 
 	"github.com/gemsorg/verification/pkg/nulls"
 )
 
-// Response entity
-type Response struct {
+// VerificationResponse onse entity
+type VerificationResponse struct {
 	ID         uint64       `db:"id" json:"id"`
 	JobID      uint64       `db:"job_id" json:"job_id"`
 	TaskID     uint64       `db:"task_id" json:"task_id"`
@@ -21,18 +22,30 @@ type Response struct {
 	UpdatedAt  time.Time    `db:"updated_at" json:"updated_at"`
 }
 
-// Responses list
-type Responses []Response
+// VerificationResponses list
+type VerificationResponses []VerificationResponse
 
-// NewResponse entity (params)
-type NewResponse struct {
+// NewVerificationResponse entity (params)
+type NewVerificationResponse struct {
 	JobID      uint64       `json:"job_id"`
 	TaskID     uint64       `json:"task_id"`
 	ResponseID uint64       `json:"response_id"`
 	WorkerID   uint64       `json:"worker_id"`
+	VerifierID uint64       `json:"verifier_id"`
 	Accepted   bool         `json:"accepted"`
-	VerifierID nulls.Int64  `json:"verifier_id"`
 	Reason     nulls.String `json:"reason"`
+}
+
+// TaskResponse entity (params)
+type TaskResponse struct {
+	ID         uint64          `json:"id"`
+	JobID      uint64          `json:"job_id"`
+	TaskID     uint64          `json:"task_id"`
+	WorkerID   uint64          `json:"worker_id"`
+	CreatedAt  time.Time       `json:"created_at"`
+	UpdatedAt  time.Time       `json:"updated_at"`
+	Value      json.RawMessage `json:"value"`
+	IsAccepted nulls.Bool      `json:"is_accepted"`
 }
 
 // Params for querying responses
@@ -62,4 +75,26 @@ func (p Params) ToQueryCondition() (string, []interface{}) {
 	}
 
 	return strings.Join(paramsQuery, " AND "), args
+}
+
+func (n NewVerificationResponse) ToVerificationResponse() VerificationResponse {
+	return VerificationResponse{
+		JobID:      n.JobID,
+		TaskID:     n.TaskID,
+		ResponseID: n.ResponseID,
+		WorkerID:   n.WorkerID,
+		VerifierID: nulls.NewInt64(n.VerifierID),
+		Accepted:   n.Accepted,
+		Reason:     n.Reason,
+	}
+}
+
+func (t TaskResponse) ToVerificationResponse() VerificationResponse {
+	return VerificationResponse{
+		JobID:      t.JobID,
+		TaskID:     t.TaskID,
+		ResponseID: t.ID,
+		WorkerID:   t.WorkerID,
+		Accepted:   false,
+	}
 }

@@ -2,12 +2,13 @@ package automatic
 
 import (
 	"github.com/gemsorg/verification/pkg/datastore"
+	"github.com/gemsorg/verification/pkg/externalsvc"
 	"github.com/gemsorg/verification/pkg/responsesvc"
 	"github.com/gemsorg/verification/pkg/verification"
 )
 
 type Consensus interface {
-	Verify(r verification.NewResponse, set *verification.Settings) (bool, error)
+	Verify(r verification.TaskResponse, set *verification.Settings) (*externalsvc.VerifyResponse, error)
 }
 
 type ResponsesMap map[string]responsesvc.Responses
@@ -24,39 +25,52 @@ func NewConsensus(s datastore.Storage, rs responsesvc.ResponseSVC) Consensus {
 	}
 }
 
-func (s *consensus) Verify(r verification.NewResponse, set *verification.Settings) (bool, error) {
+func (s *consensus) Verify(r verification.TaskResponse, set *verification.Settings) (*externalsvc.VerifyResponse, error) {
+	results := externalsvc.VerifyResponse{}
+
 	responses, err := s.responseSVC.GetPending(r.JobID, r.TaskID)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 	if int64(len(responses)) < set.AgreementCount.Int64 {
-		return false, err
+		return nil, err
 	}
-	responseMap, err := groupByRawMessage(responses)
+
+	grouped, err := groupByRawMessage(responses)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
 
-	consensus := responseMap.Conesensus(set.AgreementCount.Int64)
-
+	consensus := grouped.Conesensus(set.AgreementCount.Int64)
 	if consensus == nil {
-		return false, nil
+		return &results, nil
 	}
-	return true, nil
+
+	for _, rsp := range responses {
+		r := externalsvc.VerificationResult{
+			JobID:      rsp.JobID,
+			TaskID:     rsp.TaskID,
+			ResponseID: rsp.ID,
+			Accepted:   consensus.Has(rsp),
+		}
+		results.Results = append(results.Results, r)
+	}
+	return &results, nil
 }
 
 func (rm ResponsesMap) Conesensus(agreementCount int64) responsesvc.Responses {
-	var leader responsesvc.Responses = nil
-	var leaderLen int64 = 0
+	var leaders responsesvc.Responses = nil
+	var leadersLen int64 = 0
 
 	for _, responses := range rm {
 		ln := int64(len(responses))
-		if ln > leaderLen && ln >= agreementCount {
-			leaderLen = ln
-			leader = responses
+
+		if ln > leadersLen && ln >= agreementCount {
+			leadersLen = ln
+			leaders = responses
 		}
 	}
-	return leader
+	return leaders
 }
 
 func groupByRawMessage(rs responsesvc.Responses) (ResponsesMap, error) {

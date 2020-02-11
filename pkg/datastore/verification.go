@@ -12,9 +12,9 @@ import (
 type Storage interface {
 	GetResponseAssignment(responseID uint64, verifierID uint64) (*verification.Assignment, error)
 	Unassign(ID uint64) (*verification.Assignment, error)
-	GetResponses(verification.Params) (verification.Responses, error)
-	GetResponse(id string) (*verification.Response, error)
-	CreateResponse(r verification.NewResponse) (*verification.Response, error)
+	GetResponses(verification.Params) (verification.VerificationResponses, error)
+	GetResponse(id string) (*verification.VerificationResponse, error)
+	CreateResponse(r verification.VerificationResponse) (*verification.VerificationResponse, error)
 	GetSettings(jobID uint64) (*verification.Settings, error)
 	CreateSettings(s verification.Settings) (*verification.Settings, error)
 	GetWhitelist(jobID uint64, verifierID uint64) (*verification.Whitelist, error)
@@ -33,8 +33,8 @@ func NewDatastore(db *sqlx.DB) *VerificationStore {
 	}
 }
 
-func (vs *VerificationStore) GetResponses(p verification.Params) (verification.Responses, error) {
-	responses := verification.Responses{}
+func (vs *VerificationStore) GetResponses(p verification.Params) (verification.VerificationResponses, error) {
+	responses := verification.VerificationResponses{}
 
 	query := "SELECT * FROM verification_responses"
 	conditions, args := p.ToQueryCondition()
@@ -48,8 +48,8 @@ func (vs *VerificationStore) GetResponses(p verification.Params) (verification.R
 	return responses, nil
 }
 
-func (vs *VerificationStore) GetResponse(id string) (*verification.Response, error) {
-	r := &verification.Response{}
+func (vs *VerificationStore) GetResponse(id string) (*verification.VerificationResponse, error) {
+	r := &verification.VerificationResponse{}
 	err := vs.DB.Get(r, "SELECT * FROM verification_responses WHERE id = ?", id)
 	if err != nil {
 		return nil, err
@@ -57,7 +57,7 @@ func (vs *VerificationStore) GetResponse(id string) (*verification.Response, err
 	return r, nil
 }
 
-func (vs *VerificationStore) CreateResponse(r verification.NewResponse) (*verification.Response, error) {
+func (vs *VerificationStore) CreateResponse(r verification.VerificationResponse) (*verification.VerificationResponse, error) {
 	result, err := vs.DB.Exec(
 		"INSERT INTO verification_responses (`job_id`, `task_id`, `response_id`, `worker_id`, `verifier_id`, `accepted`, `reason`) VALUES (?,?,?,?,?,?,?)",
 		r.JobID, r.TaskID, r.ResponseID, r.WorkerID, r.VerifierID, r.Accepted, r.Reason,

@@ -7,6 +7,7 @@ package automatic
 import (
 	reflect "reflect"
 
+	"github.com/gemsorg/verification/pkg/externalsvc"
 	"github.com/gemsorg/verification/pkg/verification"
 	gomock "github.com/golang/mock/gomock"
 )
@@ -35,10 +36,10 @@ func (m *MockConsensus) EXPECT() *MockConsensusMockRecorder {
 }
 
 // Verify mocks base method
-func (m *MockConsensus) Verify(r verification.NewResponse, set *verification.Settings) (bool, error) {
+func (m *MockConsensus) Verify(r verification.TaskResponse, set *verification.Settings) (*externalsvc.VerifyResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Verify", r, set)
-	ret0, _ := ret[0].(bool)
+	ret0, _ := ret[0].(*externalsvc.VerifyResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

@@ -12,11 +12,18 @@ import (
 )
 
 type External interface {
-	Verify(reg *registrysvc.Registration, resp verification.NewResponse) (*VerifyResponse, error)
+	Verify(reg *registrysvc.Registration, resp verification.TaskResponse) (*VerifyResponse, error)
 }
 
 type VerifyResponse struct {
-	Value bool `json:"value"`
+	Results []VerificationResult `json:"results"`
+}
+
+type VerificationResult struct {
+	JobID      uint64 `json:"job_id"`
+	TaskID     uint64 `json:"task_id"`
+	ResponseID uint64 `json:"response_id"`
+	Accepted   bool   `json:"accepted`
 }
 
 type external struct {
@@ -29,7 +36,7 @@ func New(authToken string) *external {
 	}
 }
 
-func (e *external) Verify(reg *registrysvc.Registration, resp verification.NewResponse) (*VerifyResponse, error) {
+func (e *external) Verify(reg *registrysvc.Registration, resp verification.TaskResponse) (*VerifyResponse, error) {
 	url := reg.Services[registrysvc.ResponseVerifier].URL
 	requestByte, _ := json.Marshal(resp)
 	reqBody := bytes.NewReader(requestByte)

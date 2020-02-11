@@ -30,6 +30,15 @@ type Response struct {
 
 type Responses []Response
 
+func (rs Responses) Has(resp Response) bool {
+	for _, r := range rs {
+		if r.ID == resp.ID {
+			return true
+		}
+	}
+	return false
+}
+
 func NormalizeRawMessage(raw json.RawMessage) (string, error) {
 	var parsed map[string]interface{}
 	err := json.Unmarshal(raw, &parsed)
