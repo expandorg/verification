@@ -82,8 +82,6 @@ verification-verify
         verificationModule.Verify() // automatic
 
 [POST] /api/v1/responses/:responseID/verify
-  // Ensure verification is assigned
-
   verificationModule.Verify() // manual
     // if need payout ? 
     //   payoutVerifier

@@ -11,8 +11,6 @@ type Consensus interface {
 	Verify(r verification.TaskResponse, set *verification.Settings) (externalsvc.VerificationResults, error)
 }
 
-type ResponsesMap map[string]verification.TaskResponses
-
 type consensus struct {
 	store       datastore.Storage
 	responseSVC responsesvc.ResponseSVC
@@ -32,16 +30,17 @@ func (s *consensus) Verify(r verification.TaskResponse, set *verification.Settin
 	if err != nil {
 		return nil, err
 	}
+
+	// not enough responses
 	if int64(len(responses)) < set.AgreementCount.Int64 {
-		return nil, err
+		return results, nil
 	}
 
-	grouped, err := groupByRawMessage(responses)
+	consensus, err := findConesensus(responses, set.AgreementCount.Int64)
 	if err != nil {
 		return nil, err
 	}
 
-	consensus := grouped.Conesensus(set.AgreementCount.Int64)
 	if consensus == nil {
 		return results, nil
 	}
@@ -59,11 +58,16 @@ func (s *consensus) Verify(r verification.TaskResponse, set *verification.Settin
 	return results, nil
 }
 
-func (rm ResponsesMap) Conesensus(agreementCount int64) verification.TaskResponses {
+func findConesensus(rs verification.TaskResponses, agreementCount int64) (verification.TaskResponses, error) {
+	grouped, err := groupByRawMessage(rs)
+	if err != nil {
+		return nil, err
+	}
+
 	var leaders verification.TaskResponses = nil
 	var leadersLen int64 = 0
 
-	for _, responses := range rm {
+	for _, responses := range grouped {
 		ln := int64(len(responses))
 
 		if ln > leadersLen && ln >= agreementCount {
@@ -71,11 +75,11 @@ func (rm ResponsesMap) Conesensus(agreementCount int64) verification.TaskRespons
 			leaders = responses
 		}
 	}
-	return leaders
+	return leaders, nil
 }
 
-func groupByRawMessage(rs verification.TaskResponses) (ResponsesMap, error) {
-	result := ResponsesMap{}
+func groupByRawMessage(rs verification.TaskResponses) (map[string]verification.TaskResponses, error) {
+	result := map[string]verification.TaskResponses{}
 	for _, r := range rs {
 		normalized, err := responsesvc.NormalizeRawMessage(r.Value)
 		if err != nil {
