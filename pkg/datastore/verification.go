@@ -11,7 +11,7 @@ import (
 
 type Storage interface {
 	GetAssignmentByResponseAndVerifier(responseID uint64, verifierID uint64) (*verification.Assignment, error)
-	Unassign(ID uint64) (*verification.Assignment, error)
+	UpdateAssignment(a *verification.Assignment) (*verification.Assignment, error)
 	GetResponses(verification.Params) (verification.VerificationResponses, error)
 	GetResponse(id string) (*verification.VerificationResponse, error)
 	CreateResponse(r verification.VerificationResponse) (*verification.VerificationResponse, error)
@@ -229,8 +229,15 @@ func (vs *VerificationStore) GetAssignments(p verification.Params) (verification
 	return assignments, nil
 }
 
-func (vs *VerificationStore) Unassign(ID uint64) (*verification.Assignment, error) {
-	return nil, nil
+func (vs *VerificationStore) UpdateAssignment(a *verification.Assignment) (*verification.Assignment, error) {
+	_, err := vs.DB.Exec(
+		`UPDATE assignments SET verifier_id=?, active=?, expires_at=? WHERE id=?`,
+		a.VerifierID, a.Active, a.ExpiresAt, a.ID,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return vs.GetAssignment(strconv.FormatUint(a.ID, 10))
 }
 
 type DbQueryExecutor interface {
