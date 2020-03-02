@@ -7,8 +7,8 @@ package externalsvc
 import (
 	"reflect"
 
-	"github.com/gemsorg/verification/pkg/registrysvc"
-	"github.com/gemsorg/verification/pkg/verification"
+	"github.com/expandorg/verification/pkg/registrysvc"
+	"github.com/expandorg/verification/pkg/verification"
 	gomock "github.com/golang/mock/gomock"
 )
 

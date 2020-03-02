@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	service "github.com/gemsorg/verification/pkg/service"
+	service "github.com/expandorg/verification/pkg/service"
 	kithttp "github.com/go-kit/kit/transport/http"
 )
 

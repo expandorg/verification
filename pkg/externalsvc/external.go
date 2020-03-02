@@ -7,8 +7,8 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/gemsorg/verification/pkg/registrysvc"
-	"github.com/gemsorg/verification/pkg/verification"
+	"github.com/expandorg/verification/pkg/registrysvc"
+	"github.com/expandorg/verification/pkg/verification"
 )
 
 type External interface {

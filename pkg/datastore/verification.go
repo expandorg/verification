@@ -4,7 +4,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gemsorg/verification/pkg/verification"
+	"github.com/expandorg/verification/pkg/verification"
 	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
 )

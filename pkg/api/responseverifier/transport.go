@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"github.com/gemsorg/verification/pkg/apierror"
-	"github.com/gemsorg/verification/pkg/service"
-	"github.com/gemsorg/verification/pkg/verification"
+	"github.com/expandorg/verification/pkg/apierror"
+	"github.com/expandorg/verification/pkg/service"
+	"github.com/expandorg/verification/pkg/verification"
 	kithttp "github.com/go-kit/kit/transport/http"
 )
 

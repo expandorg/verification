@@ -1,10 +1,10 @@
 package automatic
 
 import (
-	"github.com/gemsorg/verification/pkg/datastore"
-	"github.com/gemsorg/verification/pkg/externalsvc"
-	"github.com/gemsorg/verification/pkg/responsesvc"
-	"github.com/gemsorg/verification/pkg/verification"
+	"github.com/expandorg/verification/pkg/datastore"
+	"github.com/expandorg/verification/pkg/externalsvc"
+	"github.com/expandorg/verification/pkg/responsesvc"
+	"github.com/expandorg/verification/pkg/verification"
 )
 
 type Consensus interface {

@@ -3,10 +3,10 @@ package responseverifier
 import (
 	"context"
 
-	"github.com/gemsorg/verification/pkg/apierror"
-	"github.com/gemsorg/verification/pkg/authentication"
-	"github.com/gemsorg/verification/pkg/service"
-	"github.com/gemsorg/verification/pkg/verification"
+	"github.com/expandorg/verification/pkg/apierror"
+	"github.com/expandorg/verification/pkg/authentication"
+	"github.com/expandorg/verification/pkg/service"
+	"github.com/expandorg/verification/pkg/verification"
 	"github.com/go-kit/kit/endpoint"
 )
 

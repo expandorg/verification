@@ -1,7 +1,7 @@
 package verification
 
 import (
-	"github.com/gemsorg/verification/pkg/nulls"
+	"github.com/expandorg/verification/pkg/nulls"
 )
 
 // Settings for job verification

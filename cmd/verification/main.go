@@ -6,17 +6,17 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/gemsorg/verification/pkg/authorization"
-	"github.com/gemsorg/verification/pkg/automatic"
-	"github.com/gemsorg/verification/pkg/database"
-	"github.com/gemsorg/verification/pkg/datastore"
-	"github.com/gemsorg/verification/pkg/externalsvc"
-	"github.com/gemsorg/verification/pkg/registrysvc"
-	"github.com/gemsorg/verification/pkg/responsesvc"
-	"github.com/gemsorg/verification/pkg/service"
+	"github.com/expandorg/verification/pkg/authorization"
+	"github.com/expandorg/verification/pkg/automatic"
+	"github.com/expandorg/verification/pkg/database"
+	"github.com/expandorg/verification/pkg/datastore"
+	"github.com/expandorg/verification/pkg/externalsvc"
+	"github.com/expandorg/verification/pkg/registrysvc"
+	"github.com/expandorg/verification/pkg/responsesvc"
+	"github.com/expandorg/verification/pkg/service"
 	"github.com/joho/godotenv"
 
-	"github.com/gemsorg/verification/pkg/server"
+	"github.com/expandorg/verification/pkg/server"
 )
 
 func main() {

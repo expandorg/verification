@@ -13,11 +13,11 @@ Backend service for verification
 
 Clone the repository with: 
 
-`go get -u github.com/gemsorg/verification`
+`go get -u github.com/expandorg/verification`
 
 OR 
 
-create a directory `$GOPATH/src/github/gemsorg` and execute: git clone git@github.com:gemsorg/verification.git 
+create a directory `$GOPATH/src/github/expandorg` and execute: git clone git@github.com:expandorg/verification.git 
 
 Run the project dependencies (db, etc.) with `make up`
 

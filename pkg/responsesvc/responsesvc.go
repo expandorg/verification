@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/gemsorg/verification/pkg/verification"
+	"github.com/expandorg/verification/pkg/verification"
 )
 
 type ResponseSVC interface {

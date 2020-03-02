@@ -7,8 +7,8 @@ package automatic
 import (
 	reflect "reflect"
 
-	"github.com/gemsorg/verification/pkg/externalsvc"
-	"github.com/gemsorg/verification/pkg/verification"
+	"github.com/expandorg/verification/pkg/externalsvc"
+	"github.com/expandorg/verification/pkg/verification"
 	gomock "github.com/golang/mock/gomock"
 )
 

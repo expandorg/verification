@@ -3,11 +3,11 @@ package service
 import (
 	"testing"
 
-	"github.com/gemsorg/verification/pkg/authorization"
-	"github.com/gemsorg/verification/pkg/automatic"
-	"github.com/gemsorg/verification/pkg/datastore"
-	"github.com/gemsorg/verification/pkg/externalsvc"
-	"github.com/gemsorg/verification/pkg/registrysvc"
+	"github.com/expandorg/verification/pkg/authorization"
+	"github.com/expandorg/verification/pkg/automatic"
+	"github.com/expandorg/verification/pkg/datastore"
+	"github.com/expandorg/verification/pkg/externalsvc"
+	"github.com/expandorg/verification/pkg/registrysvc"
 	gomock "github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 )

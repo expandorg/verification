@@ -3,7 +3,7 @@ package verification
 import (
 	"time"
 
-	"github.com/gemsorg/verification/pkg/nulls"
+	"github.com/expandorg/verification/pkg/nulls"
 )
 
 type Asgn interface {

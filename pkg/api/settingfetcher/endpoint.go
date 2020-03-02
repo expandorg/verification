@@ -5,9 +5,9 @@ import (
 	"encoding/json"
 	"strconv"
 
-	"github.com/gemsorg/verification/pkg/apierror"
-	"github.com/gemsorg/verification/pkg/authentication"
-	"github.com/gemsorg/verification/pkg/service"
+	"github.com/expandorg/verification/pkg/apierror"
+	"github.com/expandorg/verification/pkg/authentication"
+	"github.com/expandorg/verification/pkg/service"
 	"github.com/go-kit/kit/endpoint"
 )
 

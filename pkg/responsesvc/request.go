@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/gemsorg/verification/pkg/apierror"
-	"github.com/gemsorg/verification/pkg/verification"
+	"github.com/expandorg/verification/pkg/apierror"
+	"github.com/expandorg/verification/pkg/verification"
 )
 
 type responsesvc struct {
