@@ -32,6 +32,7 @@ type NewAssignment struct {
 	JobID      uint64 `json:"job_id"`
 	TaskID     uint64 `json:"task_id"`
 	VerifierID uint64 `json:"verifier_id"`
+	ResponseID uint64 `json:"response_id"`
 }
 
 type Assignments []Assignment
