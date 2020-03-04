@@ -31,21 +31,20 @@ type NewVerificationResponse struct {
 	TaskID     uint64       `json:"task_id"`
 	ResponseID uint64       `json:"response_id"`
 	WorkerID   uint64       `json:"worker_id"`
-	VerifierID uint64       `json:"verifier_id"`
+	VerifierID int64        `json:"verifier_id"`
 	Accepted   bool         `json:"accepted"`
 	Reason     nulls.String `json:"reason"`
 }
 
 // TaskResponse entity (params)
 type TaskResponse struct {
-	ID         uint64          `json:"id"`
-	JobID      uint64          `json:"job_id"`
-	TaskID     uint64          `json:"task_id"`
-	WorkerID   uint64          `json:"worker_id"`
-	CreatedAt  time.Time       `json:"created_at"`
-	UpdatedAt  time.Time       `json:"updated_at"`
-	Value      json.RawMessage `json:"value"`
-	IsAccepted nulls.Bool      `json:"is_accepted"`
+	ID        uint64          `json:"id"`
+	JobID     uint64          `json:"job_id"`
+	TaskID    uint64          `json:"task_id"`
+	WorkerID  uint64          `json:"worker_id"`
+	CreatedAt time.Time       `json:"created_at"`
+	UpdatedAt time.Time       `json:"updated_at"`
+	Value     json.RawMessage `json:"value"`
 }
 
 type TaskResponses []TaskResponse

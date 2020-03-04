@@ -5,23 +5,22 @@ import (
 
 	"github.com/expandorg/verification/pkg/api/assignmentcreator"
 	"github.com/expandorg/verification/pkg/api/assignmentfetcher"
+	"github.com/expandorg/verification/pkg/api/healthchecker"
 	"github.com/expandorg/verification/pkg/api/responsefetcher"
 	"github.com/expandorg/verification/pkg/api/responseverifier"
-	"github.com/expandorg/verification/pkg/authentication"
-
-	"github.com/expandorg/verification/pkg/api/healthchecker"
 	"github.com/expandorg/verification/pkg/api/settingcreator"
 	"github.com/expandorg/verification/pkg/api/settingfetcher"
+	"github.com/expandorg/verification/pkg/authentication"
 	"github.com/expandorg/verification/pkg/service"
 	"github.com/gorilla/mux"
 )
 
 func New(s service.VerificationService) http.Handler {
 	r := mux.NewRouter()
-
 	r.Handle("/_health", healthchecker.MakeHandler(s)).Methods("GET")
 
 	r.Handle("/assign", assignmentcreator.MakeHandler(s)).Methods("POST")
+
 	r.Handle("/verify/manual", responseverifier.MakeManualHandler(s)).Methods("POST")
 	r.Handle("/verify/automatic", responseverifier.MakeAutomaticHandler(s)).Methods("POST")
 
@@ -30,6 +29,7 @@ func New(s service.VerificationService) http.Handler {
 
 	r.Handle("/response", responsefetcher.MakeResponsesFetcherHandler(s)).Methods("GET")
 	r.Handle("/response/{response_id}", responsefetcher.MakeResponseFetcherHandler(s)).Methods("GET")
+
 	r.Handle("/settings/{job_id}", settingfetcher.MakeHandler(s)).Methods("GET")
 	r.Handle("/settings", settingcreator.MakeHandler(s)).Methods("PUT")
 

@@ -10,7 +10,7 @@ import (
 )
 
 type Storage interface {
-	GetAssignmentByResponseAndVerifier(responseID uint64, verifierID uint64) (*verification.Assignment, error)
+	GetAssignmentByResponseAndVerifier(responseID uint64, verifierID int64) (*verification.Assignment, error)
 	UpdateAssignment(a *verification.Assignment) (*verification.Assignment, error)
 	GetResponses(verification.Params) (verification.VerificationResponses, error)
 	GetResponse(id string) (*verification.VerificationResponse, error)
@@ -156,7 +156,7 @@ func (vs *VerificationStore) GetAssignment(id string) (*verification.Assignment,
 	return assignment, nil
 }
 
-func (vs *VerificationStore) GetAssignmentByResponseAndVerifier(responseID uint64, verifierID uint64) (*verification.Assignment, error) {
+func (vs *VerificationStore) GetAssignmentByResponseAndVerifier(responseID uint64, verifierID int64) (*verification.Assignment, error) {
 	assignment := &verification.Assignment{}
 	err := vs.DB.Get(assignment, "SELECT * FROM assignments WHERE response_id = ? AND verifier_id = ?", responseID, verifierID)
 	if err != nil {
@@ -167,8 +167,8 @@ func (vs *VerificationStore) GetAssignmentByResponseAndVerifier(responseID uint6
 
 func (vs *VerificationStore) CreateAssignment(a *verification.NewAssignment) (*verification.Assignment, error) {
 	result, err := vs.DB.Exec(
-		"INSERT INTO assignments (job_id, task_id, verifier_id, active, expires_at) VALUES (?,?,?,?,DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR))",
-		a.JobID, a.TaskID, a.VerifierID, 1)
+		"INSERT INTO assignments (job_id, task_id, verifier_id, response_id, active, expires_at) VALUES (?,?,?,?,?,DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR))",
+		a.JobID, a.TaskID, a.VerifierID, a.ResponseID, 1)
 
 	if err != nil {
 		if err != nil {
