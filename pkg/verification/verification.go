@@ -31,7 +31,7 @@ type NewVerificationResponse struct {
 	TaskID     uint64       `json:"task_id"`
 	ResponseID uint64       `json:"response_id"`
 	WorkerID   uint64       `json:"worker_id"`
-	VerifierID int64        `json:"verifier_id"`
+	VerifierID uint64       `json:"verifier_id"`
 	Accepted   bool         `json:"accepted"`
 	Reason     nulls.String `json:"reason"`
 }
