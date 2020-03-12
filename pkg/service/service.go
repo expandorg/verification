@@ -14,9 +14,11 @@ import (
 type VerificationService interface {
 	Healthy() bool
 	SetAuthData(data authentication.AuthData)
+
 	GetAssignments(verification.Params) (verification.Assignments, error)
 	GetAssignment(id string) (*verification.Assignment, error)
 	Assign(r verification.NewAssignment, set *verification.Settings) (*verification.Assignment, error)
+	DeleteAssignment(id string) (bool, error)
 
 	VerifyManual(r verification.NewVerificationResponse, set *verification.Settings) (*verification.VerificationResponse, error)
 	VerifyAutomatic(r verification.TaskResponse, set *verification.Settings) (verification.VerificationResponses, error)
@@ -85,6 +87,10 @@ func (s *service) Assign(a verification.NewAssignment, set *verification.Setting
 	}
 
 	return s.store.CreateAssignment(&a)
+}
+
+func (s *service) DeleteAssignment(id string) (bool, error) {
+	return s.store.DeleteAssignment(id)
 }
 
 func (s *service) VerifyManual(r verification.NewVerificationResponse, set *verification.Settings) (*verification.VerificationResponse, error) {

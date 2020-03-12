@@ -10,7 +10,7 @@ import (
 )
 
 type Storage interface {
-	GetAssignmentByResponseAndVerifier(responseID uint64, verifierID int64) (*verification.Assignment, error)
+	GetAssignmentByResponseAndVerifier(responseID uint64, verifierID uint64) (*verification.Assignment, error)
 	UpdateAssignment(a *verification.Assignment) (*verification.Assignment, error)
 	GetResponses(verification.Params) (verification.VerificationResponses, error)
 	GetResponse(id string) (*verification.VerificationResponse, error)
@@ -22,6 +22,7 @@ type Storage interface {
 	CreateAssignment(*verification.NewAssignment) (*verification.Assignment, error)
 	GetAssignment(id string) (*verification.Assignment, error)
 	GetAssignments(verification.Params) (verification.Assignments, error)
+	DeleteAssignment(id string) (bool, error)
 }
 
 type VerificationStore struct {
@@ -156,7 +157,7 @@ func (vs *VerificationStore) GetAssignment(id string) (*verification.Assignment,
 	return assignment, nil
 }
 
-func (vs *VerificationStore) GetAssignmentByResponseAndVerifier(responseID uint64, verifierID int64) (*verification.Assignment, error) {
+func (vs *VerificationStore) GetAssignmentByResponseAndVerifier(responseID uint64, verifierID uint64) (*verification.Assignment, error) {
 	assignment := &verification.Assignment{}
 	err := vs.DB.Get(assignment, "SELECT * FROM assignments WHERE response_id = ? AND verifier_id = ?", responseID, verifierID)
 	if err != nil {
@@ -167,8 +168,8 @@ func (vs *VerificationStore) GetAssignmentByResponseAndVerifier(responseID uint6
 
 func (vs *VerificationStore) CreateAssignment(a *verification.NewAssignment) (*verification.Assignment, error) {
 	result, err := vs.DB.Exec(
-		"INSERT INTO assignments (job_id, task_id, verifier_id, response_id, active, expires_at) VALUES (?,?,?,?,?,DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR))",
-		a.JobID, a.TaskID, a.VerifierID, a.ResponseID, 1)
+		"INSERT INTO assignments (job_id, task_id, verifier_id, active, expires_at) VALUES (?,?,?,?,DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR))",
+		a.JobID, a.TaskID, a.VerifierID, 1)
 
 	if err != nil {
 		if err != nil {
@@ -227,6 +228,21 @@ func (vs *VerificationStore) GetAssignments(p verification.Params) (verification
 		return assignments, err
 	}
 	return assignments, nil
+}
+
+func (vs *VerificationStore) DeleteAssignment(id string) (bool, error) {
+	result, err := vs.DB.Exec("DELETE FROM assignments WHERE id = ?", id)
+	if err != nil {
+		return false, err
+	}
+
+	numAffected, err := result.RowsAffected()
+
+	if numAffected == 0 {
+		return false, AssignmentNotFound{ID: id}
+	}
+
+	return true, nil
 }
 
 func (vs *VerificationStore) UpdateAssignment(a *verification.Assignment) (*verification.Assignment, error) {
