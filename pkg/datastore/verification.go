@@ -10,7 +10,7 @@ import (
 )
 
 type Storage interface {
-	GetAssignmentByResponseAndVerifier(responseID uint64, verifierID uint64) (*verification.Assignment, error)
+	GetAssignmentByResponseAndVerifier(responseID uint64, verifierID int64) (*verification.Assignment, error)
 	UpdateAssignment(a *verification.Assignment) (*verification.Assignment, error)
 	GetResponses(verification.Params) (verification.VerificationResponses, error)
 	GetResponse(id string) (*verification.VerificationResponse, error)
@@ -157,7 +157,7 @@ func (vs *VerificationStore) GetAssignment(id string) (*verification.Assignment,
 	return assignment, nil
 }
 
-func (vs *VerificationStore) GetAssignmentByResponseAndVerifier(responseID uint64, verifierID uint64) (*verification.Assignment, error) {
+func (vs *VerificationStore) GetAssignmentByResponseAndVerifier(responseID uint64, verifierID int64) (*verification.Assignment, error) {
 	assignment := &verification.Assignment{}
 	err := vs.DB.Get(assignment, "SELECT * FROM assignments WHERE response_id = ? AND verifier_id = ?", responseID, verifierID)
 	if err != nil {
