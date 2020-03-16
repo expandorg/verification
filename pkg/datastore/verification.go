@@ -2,7 +2,6 @@ package datastore
 
 import (
 	"strconv"
-	"strings"
 
 	"github.com/expandorg/verification/pkg/verification"
 	"github.com/go-sql-driver/mysql"
@@ -199,34 +198,18 @@ func (vs *VerificationStore) CreateAssignment(a *verification.NewAssignment) (*v
 func (vs *VerificationStore) GetAssignments(p verification.Params) (verification.Assignments, error) {
 	assignments := verification.Assignments{}
 	query := "SELECT * FROM assignments"
-	paramsQuery := []string{}
 	args := []interface{}{}
 
-	if p.VerifierID != "" && p.VerifierID != "0" {
-		args = append(args, p.VerifierID)
-		paramsQuery = append(paramsQuery, "verifier_id=?")
-	}
-	if p.JobID != "" && p.JobID != "0" {
-		args = append(args, p.JobID)
-		paramsQuery = append(paramsQuery, "job_id=?")
-	}
-	if p.TaskID != "" && p.TaskID != "0" {
-		args = append(args, p.TaskID)
-		paramsQuery = append(paramsQuery, "task_id=?")
-	}
-	if p.ResponseID != "" && p.ResponseID != "0" {
-		args = append(args, p.ResponseID)
-		paramsQuery = append(paramsQuery, "response_id=?")
-	}
-
-	if len(paramsQuery) > 0 {
-		query = query + " Where " + strings.Join(paramsQuery, " AND ")
+	conditions, args := p.ToQueryCondition()
+	if len(args) > 0 {
+		query = query + " WHERE " + conditions
 	}
 
 	err := vs.DB.Select(&assignments, query, args...)
 	if err != nil {
 		return assignments, err
 	}
+
 	return assignments, nil
 }
 

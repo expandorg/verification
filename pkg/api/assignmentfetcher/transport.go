@@ -6,9 +6,8 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/expandorg/verification/pkg/verification"
-
 	"github.com/expandorg/verification/pkg/service"
+	"github.com/expandorg/verification/pkg/verification"
 	kithttp "github.com/go-kit/kit/transport/http"
 	"github.com/gorilla/mux"
 )
@@ -38,9 +37,9 @@ func decodeAssignmentsFetcherRequest(_ context.Context, r *http.Request) (interf
 	as := verification.Params{}
 	params := r.URL.Query()
 
-	workerID, ok := params["worker_id"]
-	if ok && len(workerID) > 0 {
-		as.WorkerID = workerID[0]
+	verifierID, ok := params["verifier_id"]
+	if ok && len(verifierID) > 0 {
+		as.VerifierID = verifierID[0]
 	}
 	jobID, ok := params["job_id"]
 	if ok && len(jobID) > 0 {
@@ -53,6 +52,10 @@ func decodeAssignmentsFetcherRequest(_ context.Context, r *http.Request) (interf
 	responseID, ok := params["response_id"]
 	if ok && len(responseID) > 0 {
 		as.ResponseID = responseID[0]
+	}
+	status, ok := params["status"]
+	if ok && len(taskID) > 0 {
+		as.Status = verification.Status(status[0])
 	}
 
 	return as, nil
