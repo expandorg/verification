@@ -1,7 +1,6 @@
 package service
 
 import (
-	"github.com/expandorg/assignment/pkg/assignment"
 	"github.com/expandorg/verification/pkg/authentication"
 	"github.com/expandorg/verification/pkg/authorization"
 	"github.com/expandorg/verification/pkg/automatic"
@@ -20,7 +19,7 @@ type VerificationService interface {
 	GetAssignment(id string) (*verification.Assignment, error)
 	Assign(r verification.NewAssignment, set *verification.Settings) (*verification.Assignment, error)
 	DeleteAssignment(id string) (bool, error)
-	UpdateAssignment(verifierID, jobID, responseID uint64, status string) (bool, error)
+	UpdateAssignment(verifierID, jobID, responseID uint64, status string) (*verification.Assignment, error)
 
 	VerifyManual(r verification.NewVerificationResponse, set *verification.Settings) (*verification.VerificationResponse, error)
 	VerifyAutomatic(r verification.TaskResponse, set *verification.Settings) (verification.VerificationResponses, error)
@@ -95,11 +94,9 @@ func (s *service) DeleteAssignment(id string) (bool, error) {
 	return s.store.DeleteAssignment(id)
 }
 
-func (s *service) UpdateAssignment(verifierID, jobID, responseID uint64, status string) (bool, error) {
+func (s *service) UpdateAssignment(verifierID, jobID, responseID uint64, status string) (*verification.Assignment, error) {
 	// a.VerifierID, a.Active, a.ExpiresAt, a.ID,
-	return s.store.UpdateAssignment(assignment.Assignment{
-		WorkerID: verifierID,
-	})
+	return s.store.UpdateAssignment(&verification.Assignment{})
 }
 
 func (s *service) VerifyManual(r verification.NewVerificationResponse, set *verification.Settings) (*verification.VerificationResponse, error) {
@@ -154,7 +151,7 @@ func (s *service) callAutomaticVerification(r verification.TaskResponse, set *ve
 	if reg != nil {
 		return s.external.Verify(reg, r)
 	}
-	return s.consensus.Verify(r, set)
+	return s.consensus.Verify(r, set, s.authorizor.GetAuthToken())
 }
 
 func (s *service) GetRegistration(jobID uint64, svcType string) *registrysvc.Registration {

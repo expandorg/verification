@@ -16,9 +16,9 @@ func makeAssignmentUpdaterEndpoint(svc service.VerificationService) endpoint.End
 		req := request.(AssignmentRequest)
 		p, err := svc.UpdateAssignment(req.WorkerID, req.JobID, req.ResponseID, req.Status)
 		if err != nil {
-			return AssignmentResponse{p}, errorResponse(err)
+			return AssignmentResponse{p != nil}, errorResponse(err)
 		}
-		return AssignmentResponse{p}, nil
+		return AssignmentResponse{p != nil}, nil
 	}
 }
 

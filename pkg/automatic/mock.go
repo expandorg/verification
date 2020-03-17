@@ -36,16 +36,16 @@ func (m *MockConsensus) EXPECT() *MockConsensusMockRecorder {
 }
 
 // Verify mocks base method
-func (m *MockConsensus) Verify(r verification.TaskResponse, set *verification.Settings) (externalsvc.VerificationResults, error) {
+func (m *MockConsensus) Verify(r verification.TaskResponse, set *verification.Settings, t string) (externalsvc.VerificationResults, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Verify", r, set)
+	ret := m.ctrl.Call(m, "Verify", r, set, t)
 	ret0, _ := ret[0].([]externalsvc.VerificationResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Verify indicates an expected call of Verify
-func (mr *MockConsensusMockRecorder) Verify(r, s interface{}) *gomock.Call {
+func (mr *MockConsensusMockRecorder) Verify(r, s, t interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Verify", reflect.TypeOf((*MockConsensus)(nil).Verify), r, s)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Verify", reflect.TypeOf((*MockConsensus)(nil).Verify), r, s, t)
 }
