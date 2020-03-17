@@ -1,6 +1,7 @@
 package service
 
 import (
+	"github.com/expandorg/assignment/pkg/assignment"
 	"github.com/expandorg/verification/pkg/authentication"
 	"github.com/expandorg/verification/pkg/authorization"
 	"github.com/expandorg/verification/pkg/automatic"
@@ -19,6 +20,7 @@ type VerificationService interface {
 	GetAssignment(id string) (*verification.Assignment, error)
 	Assign(r verification.NewAssignment, set *verification.Settings) (*verification.Assignment, error)
 	DeleteAssignment(id string) (bool, error)
+	UpdateAssignment(verifierID, jobID, responseID uint64, status string) (bool, error)
 
 	VerifyManual(r verification.NewVerificationResponse, set *verification.Settings) (*verification.VerificationResponse, error)
 	VerifyAutomatic(r verification.TaskResponse, set *verification.Settings) (verification.VerificationResponses, error)
@@ -91,6 +93,13 @@ func (s *service) Assign(a verification.NewAssignment, set *verification.Setting
 
 func (s *service) DeleteAssignment(id string) (bool, error) {
 	return s.store.DeleteAssignment(id)
+}
+
+func (s *service) UpdateAssignment(verifierID, jobID, responseID uint64, status string) (bool, error) {
+	// a.VerifierID, a.Active, a.ExpiresAt, a.ID,
+	return s.store.UpdateAssignment(assignment.Assignment{
+		WorkerID: verifierID,
+	})
 }
 
 func (s *service) VerifyManual(r verification.NewVerificationResponse, set *verification.Settings) (*verification.VerificationResponse, error) {
