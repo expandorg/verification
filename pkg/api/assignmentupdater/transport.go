@@ -7,6 +7,7 @@ import (
 
 	"github.com/expandorg/verification/pkg/apierror"
 	"github.com/expandorg/verification/pkg/service"
+	"github.com/expandorg/verification/pkg/verification"
 	kithttp "github.com/go-kit/kit/transport/http"
 )
 
@@ -24,7 +25,7 @@ func encodeResponse(ctx context.Context, w http.ResponseWriter, response interfa
 }
 
 func decodeAssignmentUpdaterRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var a AssignmentRequest
+	var a verification.Assignment
 	decoder := json.NewDecoder(r.Body)
 	err := decoder.Decode(&a)
 	if err != nil {

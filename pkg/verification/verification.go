@@ -8,17 +8,6 @@ import (
 	"github.com/expandorg/verification/pkg/nulls"
 )
 
-type Status string
-
-const (
-	Active   Status = "active"
-	InActive Status = "inactive"
-	Pending  Status = "pending"
-	Accepted Status = "accepted"
-	Rejected Status = "rejected"
-	Expired  Status = "expired"
-)
-
 // VerificationResponse onse entity
 type VerificationResponse struct {
 	ID         uint64       `db:"id" json:"id"`

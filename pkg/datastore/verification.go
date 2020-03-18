@@ -229,12 +229,23 @@ func (vs *VerificationStore) DeleteAssignment(id string) (bool, error) {
 }
 
 func (vs *VerificationStore) UpdateAssignment(a *verification.Assignment) (*verification.Assignment, error) {
-	_, err := vs.DB.Exec(
-		`UPDATE assignments SET verifier_id=?, active=?, expires_at=? WHERE id=?`,
-		a.VerifierID, a.Active, a.ExpiresAt, a.ID,
-	)
+	if a.JobID == 0 || a.VerifierID == 0 || !a.ResponseID.Valid || a.Status == "" {
+		return nil, AssignmentNotFound{VerifierID: a.VerifierID, JobID: a.JobID, ResponseID: uint64(a.ResponseID.Int64)}
+	}
+
+	var active bool
+	if a.Status == verification.Active {
+		active = true
+	}
+
+	query := "UPDATE assignments SET status=?, active=? WHERE verifier_id=? AND job_id=? AND response_id=?"
+	_, err := vs.DB.Exec(query, a.Status, active, a.VerifierID, a.JobID, a.ResponseID)
 	if err != nil {
 		return nil, err
+	}
+
+	if a.ID == 0 {
+		return a, nil
 	}
 	return vs.GetAssignment(strconv.FormatUint(a.ID, 10))
 }

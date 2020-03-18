@@ -6,7 +6,6 @@ import (
 	"github.com/expandorg/verification/pkg/automatic"
 	"github.com/expandorg/verification/pkg/datastore"
 	"github.com/expandorg/verification/pkg/externalsvc"
-	"github.com/expandorg/verification/pkg/nulls"
 	"github.com/expandorg/verification/pkg/registrysvc"
 	"github.com/expandorg/verification/pkg/verification"
 )
@@ -19,7 +18,7 @@ type VerificationService interface {
 	GetAssignment(id string) (*verification.Assignment, error)
 	Assign(r verification.NewAssignment, set *verification.Settings) (*verification.Assignment, error)
 	DeleteAssignment(id string) (bool, error)
-	UpdateAssignment(verifierID, jobID, responseID uint64, status string) (*verification.Assignment, error)
+	UpdateAssignment(a verification.Assignment) (*verification.Assignment, error)
 
 	VerifyManual(r verification.NewVerificationResponse, set *verification.Settings) (*verification.VerificationResponse, error)
 	VerifyAutomatic(r verification.TaskResponse, set *verification.Settings) (verification.VerificationResponses, error)
@@ -94,9 +93,8 @@ func (s *service) DeleteAssignment(id string) (bool, error) {
 	return s.store.DeleteAssignment(id)
 }
 
-func (s *service) UpdateAssignment(verifierID, jobID, responseID uint64, status string) (*verification.Assignment, error) {
-	// a.VerifierID, a.Active, a.ExpiresAt, a.ID,
-	return s.store.UpdateAssignment(&verification.Assignment{})
+func (s *service) UpdateAssignment(a verification.Assignment) (*verification.Assignment, error) {
+	return s.store.UpdateAssignment(&a)
 }
 
 func (s *service) VerifyManual(r verification.NewVerificationResponse, set *verification.Settings) (*verification.VerificationResponse, error) {
@@ -114,7 +112,7 @@ func (s *service) VerifyManual(r verification.NewVerificationResponse, set *veri
 		return nil, err
 	}
 	// unassign verification
-	assignment.Active = nulls.NewBool(false)
+	assignment.Status = verification.InActive
 	_, err = s.store.UpdateAssignment(assignment)
 	if err != nil {
 		return nil, err

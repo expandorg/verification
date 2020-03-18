@@ -29,10 +29,11 @@ func (err AlreadyAssigned) Error() string {
 type AssignmentNotFound struct {
 	ID         string
 	WorkerID   uint64
+	VerifierID uint64
 	JobID      uint64
 	ResponseID uint64
 }
 
 func (err AssignmentNotFound) Error() string {
-	return fmt.Sprintf("No Record found for id: %s, worker_id: %d, job_id: %d, response_id: %d", err.ID, err.WorkerID, err.JobID, err.ResponseID)
+	return fmt.Sprintf("No Record found for id: %s, worker_id: %d, verifier_id: %d, job_id: %d, response_id: %d", err.ID, err.WorkerID, err.VerifierID, err.JobID, err.ResponseID)
 }

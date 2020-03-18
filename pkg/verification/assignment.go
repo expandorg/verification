@@ -6,6 +6,17 @@ import (
 	"github.com/expandorg/verification/pkg/nulls"
 )
 
+type Status string
+
+const (
+	Active   Status = "active"
+	InActive Status = "inactive"
+	Pending  Status = "pending"
+	Accepted Status = "accepted"
+	Rejected Status = "rejected"
+	Expired  Status = "expired"
+)
+
 type Asgn interface {
 	IsAllowed(set *Settings) (bool, error)
 	GetAssignment() *Assignment
@@ -24,7 +35,7 @@ type Assignment struct {
 	VerifierID uint64      `db:"verifier_id" json:"verifier_id"`
 	ResponseID nulls.Int64 `db:"response_id" json:"response_id"`
 	Active     nulls.Bool  `db:"active" json:"active"`
-	Status     string      `db:"status" json:"status"`
+	Status     Status      `db:"status" json:"status"`
 	AssignedAt time.Time   `db:"assigned_at" json:"assigned_at"`
 	ExpiresAt  nulls.Time  `db:"expires_at" json:"expires_at"`
 }

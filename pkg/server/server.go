@@ -6,6 +6,7 @@ import (
 	"github.com/expandorg/verification/pkg/api/assignmentcreator"
 	"github.com/expandorg/verification/pkg/api/assignmentdestroyer"
 	"github.com/expandorg/verification/pkg/api/assignmentfetcher"
+	"github.com/expandorg/verification/pkg/api/assignmentupdater"
 	"github.com/expandorg/verification/pkg/api/responsefetcher"
 	"github.com/expandorg/verification/pkg/api/responseverifier"
 	"github.com/expandorg/verification/pkg/authentication"
@@ -29,7 +30,7 @@ func New(s service.VerificationService) http.Handler {
 
 	r.Handle("/assignments", assignmentfetcher.MakeAssignmentsFetcherHandler(s)).Methods("GET")
 	r.Handle("/assignments/{assignment_id}", assignmentfetcher.MakeAssignmentFetcherHandler(s)).Methods("GET")
-
+	r.Handle("/assignments", assignmentupdater.MakeHandler(s)).Methods("PATCH")
 	r.Handle("/response", responsefetcher.MakeResponsesFetcherHandler(s)).Methods("GET")
 	r.Handle("/response/{response_id}", responsefetcher.MakeResponseFetcherHandler(s)).Methods("GET")
 	r.Handle("/settings/{job_id}", settingfetcher.MakeHandler(s)).Methods("GET")
