@@ -18,7 +18,7 @@ type Storage interface {
 	GetSettings(jobID uint64) (*verification.Settings, error)
 	CreateSettings(s verification.Settings) (*verification.Settings, error)
 	GetWhitelist(jobID uint64, verifierID uint64) (*verification.Whitelist, error)
-	CreateAssignment(*verification.NewAssignment) (*verification.Assignment, error)
+	CreateAssignment(*verification.EmptyAssignment) (*verification.Assignment, error)
 	GetAssignment(id string) (*verification.Assignment, error)
 	GetAssignments(verification.Params) (verification.Assignments, error)
 	DeleteAssignment(id string) (bool, error)
@@ -165,18 +165,16 @@ func (vs *VerificationStore) GetAssignmentByResponseAndVerifier(responseID uint6
 	return assignment, nil
 }
 
-func (vs *VerificationStore) CreateAssignment(a *verification.NewAssignment) (*verification.Assignment, error) {
+func (vs *VerificationStore) CreateAssignment(a *verification.EmptyAssignment) (*verification.Assignment, error) {
 	result, err := vs.DB.Exec(
-		"INSERT INTO assignments (job_id, task_id, verifier_id, active, expires_at) VALUES (?,?,?,?,DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR))",
-		a.JobID, a.TaskID, a.VerifierID, 1)
-
+		"INSERT INTO assignments (job_id, task_id, response_id, active, expires_at) VALUES (?,?,?,?,DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR))",
+		a.JobID, a.TaskID, a.ResponseID, 1,
+	)
 	if err != nil {
-		if err != nil {
-			mysqlerr, ok := err.(*mysql.MySQLError)
-			// duplicate entry verifier_id & job_id
-			if ok && mysqlerr.Number == 1062 {
-				return nil, AlreadyAssigned{}
-			}
+		mysqlerr, ok := err.(*mysql.MySQLError)
+		// duplicate entry verifier_id & job_id
+		if ok && mysqlerr.Number == 1062 {
+			return nil, AlreadyAssigned{}
 		}
 		return nil, err
 	}
@@ -185,14 +183,7 @@ func (vs *VerificationStore) CreateAssignment(a *verification.NewAssignment) (*v
 	if err != nil {
 		return nil, err
 	}
-
-	assi, err := vs.GetAssignment(strconv.FormatInt(id, 10))
-
-	if err != nil {
-		return nil, err
-	}
-
-	return assi, nil
+	return vs.GetAssignment(strconv.FormatInt(id, 10))
 }
 
 func (vs *VerificationStore) GetAssignments(p verification.Params) (verification.Assignments, error) {

@@ -87,17 +87,18 @@ func (s *service) Assign(a verification.NewAssignment, set *verification.Setting
 		return nil, AssignmentNotAllowed{}
 	}
 
-	return s.store.CreateAssignment(&a)
+	return nil, nil
+	// return s.store.CreateAssignment(&a)
 }
 
 func (s *service) CreateEmptyAssignment(r verification.TaskResponse, set *verification.Settings) (*verification.Assignment, error) {
 	if set.Manual {
 		return nil, InvalidVerificationType{set.Manual}
 	}
-	empty := verification.NewAssignment{
-		JobID:  r.JobID,
-		TaskID: r.TaskID,
-		// TODO: respinseID??
+	empty := verification.EmptyAssignment{
+		ResponseID: r.ID,
+		TaskID:     r.TaskID,
+		JobID:      r.JobID,
 	}
 	return s.store.CreateAssignment(&empty)
 }

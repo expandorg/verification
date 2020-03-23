@@ -41,10 +41,15 @@ type Assignment struct {
 }
 
 type NewAssignment struct {
-	JobID             uint64 `json:"job_id"`
-	TaskID            uint64 `json:"task_id"`
-	VerifierID        uint64 `json:"verifier_id"`
-	OnboardingSuccess bool   `json:"onboarding_success"`
+	JobID      uint64 `json:"job_id"`
+	TaskID     uint64 `json:"task_id"`
+	VerifierID uint64 `json:"verifier_id"`
+}
+
+type EmptyAssignment struct {
+	JobID      uint64 `json:"job_id"`
+	TaskID     uint64 `json:"task_id"`
+	ResponseID uint64 `json:"response_id"`
 }
 
 type Assignments []Assignment
