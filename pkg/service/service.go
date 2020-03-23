@@ -14,6 +14,7 @@ type VerificationService interface {
 	Healthy() bool
 	SetAuthData(data authentication.AuthData)
 
+	CreateEmptyAssignment(r verification.TaskResponse, set *verification.Settings) (*verification.Assignment, error)
 	GetAssignments(verification.Params) (verification.Assignments, error)
 	GetAssignment(id string) (*verification.Assignment, error)
 	Assign(r verification.NewAssignment, set *verification.Settings) (*verification.Assignment, error)
@@ -87,6 +88,19 @@ func (s *service) Assign(a verification.NewAssignment, set *verification.Setting
 	}
 
 	return s.store.CreateAssignment(&a)
+}
+
+func (s *service) CreateEmptyAssignment(r verification.TaskResponse, set *verification.Settings) (*verification.Assignment, error) {
+	if set.Manual {
+		return nil, InvalidVerificationType{set.Manual}
+	}
+	empty := verification.NewAssignment{
+		JobID:  r.JobID,
+		TaskID: r.TaskID,
+		// TODO: respinseID??
+	}
+	s.store.CreateAssignment(&empty)
+	return nil, nil
 }
 
 func (s *service) DeleteAssignment(id string) (bool, error) {

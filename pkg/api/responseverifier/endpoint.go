@@ -2,7 +2,6 @@ package responseverifier
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/expandorg/verification/pkg/apierror"
 	"github.com/expandorg/verification/pkg/authentication"
@@ -21,8 +20,6 @@ func makeAutomaticEndpoint(svc service.VerificationService) endpoint.Endpoint {
 		if err != nil {
 			return nil, err
 		}
-		fmt.Println(settings)
-		fmt.Println(req.JobID)
 		r, err := svc.VerifyAutomatic(req, settings)
 		if err != nil {
 			return nil, errorResponse(err)
