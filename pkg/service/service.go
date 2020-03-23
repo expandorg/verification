@@ -99,8 +99,7 @@ func (s *service) CreateEmptyAssignment(r verification.TaskResponse, set *verifi
 		TaskID: r.TaskID,
 		// TODO: respinseID??
 	}
-	s.store.CreateAssignment(&empty)
-	return nil, nil
+	return s.store.CreateAssignment(&empty)
 }
 
 func (s *service) DeleteAssignment(id string) (bool, error) {
