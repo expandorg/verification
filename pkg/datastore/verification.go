@@ -22,6 +22,7 @@ type Storage interface {
 	GetAssignment(id string) (*verification.Assignment, error)
 	GetAssignments(verification.Params) (verification.Assignments, error)
 	DeleteAssignment(id string) (bool, error)
+	GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error)
 }
 
 type VerificationStore struct {
@@ -239,6 +240,15 @@ func (vs *VerificationStore) UpdateAssignment(a *verification.Assignment) (*veri
 		return a, nil
 	}
 	return vs.GetAssignment(strconv.FormatUint(a.ID, 10))
+}
+
+func (vs *VerificationStore) GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error) {
+	a := verification.JobEmptyAssignments{}
+	err := vs.DB.Select(&a, "SELECT job_id, count(id) as empty_count FROM assignments WHERE verifier_id is NULL GROUP BY job_id ")
+	if err != nil {
+		return nil, err
+	}
+	return a, nil
 }
 
 type DbQueryExecutor interface {

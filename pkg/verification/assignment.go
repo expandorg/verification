@@ -40,6 +40,8 @@ type Assignment struct {
 	ExpiresAt  nulls.Time  `db:"expires_at" json:"expires_at"`
 }
 
+type Assignments []Assignment
+
 type NewAssignment struct {
 	JobID      uint64 `json:"job_id"`
 	TaskID     uint64 `json:"task_id"`
@@ -52,7 +54,12 @@ type EmptyAssignment struct {
 	ResponseID uint64 `json:"response_id"`
 }
 
-type Assignments []Assignment
+type JobEmptyAssignment struct {
+	JobID          uint64 `db:"job_id" json:"job_id"`
+	AvailableCount uint64 `db:"empty_count" json:"empty_count"`
+}
+
+type JobEmptyAssignments []JobEmptyAssignment
 
 func New(na *NewAssignment, a *Assignment) *assignment {
 	return &assignment{

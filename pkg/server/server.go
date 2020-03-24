@@ -8,6 +8,7 @@ import (
 	"github.com/expandorg/verification/pkg/api/assignmentfetcher"
 	"github.com/expandorg/verification/pkg/api/assignmentmaker"
 	"github.com/expandorg/verification/pkg/api/assignmentupdater"
+	"github.com/expandorg/verification/pkg/api/jobassignmentsfetcher"
 	"github.com/expandorg/verification/pkg/api/responsefetcher"
 	"github.com/expandorg/verification/pkg/api/responseverifier"
 	"github.com/expandorg/verification/pkg/authentication"
@@ -37,6 +38,8 @@ func New(s service.VerificationService) http.Handler {
 	r.Handle("/response/{response_id}", responsefetcher.MakeResponseFetcherHandler(s)).Methods("GET")
 	r.Handle("/settings/{job_id}", settingfetcher.MakeHandler(s)).Methods("GET")
 	r.Handle("/settings", settingcreator.MakeHandler(s)).Methods("PUT")
+
+	r.Handle("/jobs/available", jobassignmentsfetcher.MakeHandler(s)).Methods("GET")
 
 	r.Use(authentication.AuthMiddleware)
 	return withHandlers(r)

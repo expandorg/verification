@@ -29,6 +29,8 @@ type VerificationService interface {
 
 	GetSettings(jobID uint64) (*verification.Settings, error)
 	CreateSettings(verification.Settings) (*verification.Settings, error)
+
+	GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error)
 }
 
 type service struct {
@@ -180,4 +182,8 @@ func (s *service) GetAssignments(p verification.Params) (verification.Assignment
 
 func (s *service) GetAssignment(id string) (*verification.Assignment, error) {
 	return s.store.GetAssignment(id)
+}
+
+func (s *service) GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error) {
+	return s.store.GetJobsWithEmptyAssignments()
 }
