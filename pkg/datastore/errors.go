@@ -1,6 +1,10 @@
 package datastore
 
-import "fmt"
+import (
+	"fmt"
+
+	"github.com/expandorg/verification/pkg/nulls"
+)
 
 type AlreadyResponded struct{}
 
@@ -29,7 +33,7 @@ func (err AlreadyAssigned) Error() string {
 type AssignmentNotFound struct {
 	ID         string
 	WorkerID   uint64
-	VerifierID uint64
+	VerifierID nulls.Int64
 	JobID      uint64
 	ResponseID uint64
 }

@@ -220,7 +220,7 @@ func (vs *VerificationStore) DeleteAssignment(id string) (bool, error) {
 }
 
 func (vs *VerificationStore) UpdateAssignment(a *verification.Assignment) (*verification.Assignment, error) {
-	if a.JobID == 0 || a.VerifierID == 0 || !a.ResponseID.Valid || a.Status == "" {
+	if a.JobID == 0 || !a.VerifierID.Valid || !a.ResponseID.Valid || a.Status == "" {
 		return nil, AssignmentNotFound{VerifierID: a.VerifierID, JobID: a.JobID, ResponseID: uint64(a.ResponseID.Int64)}
 	}
 

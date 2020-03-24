@@ -32,7 +32,7 @@ type Assignment struct {
 	ID         uint64      `db:"id" json:"id"`
 	JobID      uint64      `db:"job_id" json:"job_id"`
 	TaskID     uint64      `db:"task_id" json:"task_id"`
-	VerifierID uint64      `db:"verifier_id" json:"verifier_id"`
+	VerifierID nulls.Int64 `db:"verifier_id" json:"verifier_id"`
 	ResponseID nulls.Int64 `db:"response_id" json:"response_id"`
 	Active     nulls.Bool  `db:"active" json:"active"`
 	Status     Status      `db:"status" json:"status"`
