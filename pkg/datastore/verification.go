@@ -23,6 +23,7 @@ type Storage interface {
 	GetAssignments(verification.Params) (verification.Assignments, error)
 	DeleteAssignment(id string) (bool, error)
 	GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error)
+	Assign(a *verification.NewAssignment) (*verification.Assignment, error)
 }
 
 type VerificationStore struct {
@@ -168,8 +169,8 @@ func (vs *VerificationStore) GetAssignmentByResponseAndVerifier(responseID uint6
 
 func (vs *VerificationStore) CreateAssignment(a *verification.EmptyAssignment) (*verification.Assignment, error) {
 	result, err := vs.DB.Exec(
-		"INSERT INTO assignments (job_id, task_id, response_id, active, expires_at) VALUES (?,?,?,?,DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR))",
-		a.JobID, a.TaskID, a.ResponseID, 1,
+		"INSERT INTO assignments (job_id, task_id, response_id, active) VALUES (?,?,?,?)",
+		a.JobID, a.TaskID, a.ResponseID, 0,
 	)
 	if err != nil {
 		mysqlerr, ok := err.(*mysql.MySQLError)
@@ -185,6 +186,36 @@ func (vs *VerificationStore) CreateAssignment(a *verification.EmptyAssignment) (
 		return nil, err
 	}
 	return vs.GetAssignment(strconv.FormatInt(id, 10))
+}
+
+func (vs *VerificationStore) Assign(a *verification.NewAssignment) (*verification.Assignment, error) {
+	result, err := vs.DB.Exec(
+		"UPDATE assignments SET id=(SELECT @updated_id := id), verifier_id=?, active=?, status=?, assigned_at=CURRENT_TIMESTAMP, expires_at=DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR) WHERE job_id = ? AND verifier_id=0 LIMIT 1",
+		a.VerifierID, 1, verification.Active, a.JobID,
+	)
+	if err != nil {
+		mysqlerr, ok := err.(*mysql.MySQLError)
+		// duplicate entry verifier_id & job_id
+		if ok && mysqlerr.Number == 1062 {
+			return nil, AlreadyAssigned{}
+		}
+		return nil, err
+	}
+
+	num, err := result.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	if num == 0 {
+		return nil, NoAssignmentsAvailable{a.JobID}
+	}
+
+	var assignmentID string
+	err = vs.DB.Get(&assignmentID, "SELECT @updated_id")
+	if err != nil {
+		return nil, err
+	}
+	return vs.GetAssignment(assignmentID)
 }
 
 func (vs *VerificationStore) GetAssignments(p verification.Params) (verification.Assignments, error) {

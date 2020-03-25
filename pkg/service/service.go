@@ -89,8 +89,7 @@ func (s *service) Assign(a verification.NewAssignment, set *verification.Setting
 		return nil, AssignmentNotAllowed{}
 	}
 
-	return nil, nil
-	// return s.store.CreateAssignment(&a)
+	return s.store.Assign(&a)
 }
 
 func (s *service) CreateEmptyAssignment(r verification.TaskResponse, set *verification.Settings) (*verification.Assignment, error) {

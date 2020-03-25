@@ -30,6 +30,14 @@ func (err AlreadyAssigned) Error() string {
 	return "User is already assigned a task from this job"
 }
 
+type NoAssignmentsAvailable struct {
+	JobID uint64
+}
+
+func (err NoAssignmentsAvailable) Error() string {
+	return fmt.Sprintf("There are no available verification for job: %d", err.JobID)
+}
+
 type AssignmentNotFound struct {
 	ID         string
 	WorkerID   uint64
