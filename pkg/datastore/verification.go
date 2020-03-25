@@ -190,7 +190,7 @@ func (vs *VerificationStore) CreateAssignment(a *verification.EmptyAssignment) (
 
 func (vs *VerificationStore) Assign(a *verification.NewAssignment) (*verification.Assignment, error) {
 	result, err := vs.DB.Exec(
-		"UPDATE assignments SET id=(SELECT @updated_id := id), verifier_id=?, active=?, status=?, assigned_at=CURRENT_TIMESTAMP, expires_at=DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR) WHERE job_id = ? AND verifier_id=0 LIMIT 1",
+		"UPDATE assignments SET id=(SELECT @updated_id := id), verifier_id=?, active=?, status=?, assigned_at=CURRENT_TIMESTAMP, expires_at=DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR) WHERE job_id = ? AND verifier_id IS NULL LIMIT 1",
 		a.VerifierID, 1, verification.Active, a.JobID,
 	)
 	if err != nil {
