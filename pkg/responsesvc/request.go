@@ -14,19 +14,16 @@ import (
 )
 
 type responsesvc struct {
-	authToken string
 }
 
 func New(token string) ResponseSVC {
-	return &responsesvc{
-		authToken: token,
-	}
+	return &responsesvc{}
 }
 
-func (rs *responsesvc) GetPending(jobID uint64, taskID uint64) (verification.TaskResponses, error) {
+func (rs *responsesvc) GetPending(authToken string, taskID uint64) (verification.TaskResponses, error) {
 	r := PendingResult{}
-	route := fmt.Sprintf("/jobs/%d/task/%d/responses/pending", jobID, taskID)
-	result, err := rs.serviceRequest("GET", route, nil)
+	route := fmt.Sprintf("tasks/%d/responses/pending", taskID)
+	result, err := rs.serviceRequest("GET", route, authToken, nil)
 	if err != nil {
 		return r.Responses, err
 	}
@@ -38,7 +35,7 @@ func (rs *responsesvc) GetPending(jobID uint64, taskID uint64) (verification.Tas
 	return r.Responses, nil
 }
 
-func (rs *responsesvc) serviceRequest(action string, route string, reqBody io.Reader) ([]byte, error) {
+func (rs *responsesvc) serviceRequest(action string, route string, authToken string, reqBody io.Reader) ([]byte, error) {
 	client := &http.Client{}
 	serviceURL := fmt.Sprintf("%s/%s", os.Getenv("RESPONSES_SVC_URL"), route)
 
@@ -47,7 +44,7 @@ func (rs *responsesvc) serviceRequest(action string, route string, reqBody io.Re
 		return nil, errorResponse(err)
 	}
 
-	req.AddCookie(&http.Cookie{Name: "JWT", Value: rs.authToken})
+	req.AddCookie(&http.Cookie{Name: "JWT", Value: authToken})
 
 	r, err := client.Do(req)
 	if err != nil {

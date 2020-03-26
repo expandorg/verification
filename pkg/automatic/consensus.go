@@ -8,7 +8,7 @@ import (
 )
 
 type Consensus interface {
-	Verify(r verification.TaskResponse, set *verification.Settings) (externalsvc.VerificationResults, error)
+	Verify(r verification.TaskResponse, set *verification.Settings, token string) (externalsvc.VerificationResults, error)
 }
 
 type consensus struct {
@@ -23,10 +23,10 @@ func NewConsensus(s datastore.Storage, rs responsesvc.ResponseSVC) Consensus {
 	}
 }
 
-func (s *consensus) Verify(r verification.TaskResponse, set *verification.Settings) (externalsvc.VerificationResults, error) {
+func (s *consensus) Verify(r verification.TaskResponse, set *verification.Settings, token string) (externalsvc.VerificationResults, error) {
 	results := externalsvc.VerificationResults{}
 
-	responses, err := s.responseSVC.GetPending(r.JobID, r.TaskID)
+	responses, err := s.responseSVC.GetPending(token, r.TaskID)
 	if err != nil {
 		return nil, err
 	}

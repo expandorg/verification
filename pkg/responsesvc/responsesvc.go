@@ -9,7 +9,7 @@ import (
 )
 
 type ResponseSVC interface {
-	GetPending(jobID uint64, taskID uint64) (verification.TaskResponses, error)
+	GetPending(authToken string, taskID uint64) (verification.TaskResponses, error)
 }
 
 type PendingResult struct {

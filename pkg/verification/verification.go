@@ -56,6 +56,7 @@ type Params struct {
 	JobID      string
 	TaskID     string
 	ResponseID string
+	Status     Status
 }
 
 // ToQueryCondition converts Params to sql query condition
@@ -66,6 +67,10 @@ func (p Params) ToQueryCondition() (string, []interface{}) {
 		args = append(args, p.WorkerID)
 		paramsQuery = append(paramsQuery, "worker_id=?")
 	}
+	if p.VerifierID != "" && p.VerifierID != "0" {
+		args = append(args, p.VerifierID)
+		paramsQuery = append(paramsQuery, "verifier_id=?")
+	}
 	if p.JobID != "" && p.JobID != "0" {
 		args = append(args, p.JobID)
 		paramsQuery = append(paramsQuery, "job_id=?")
@@ -73,6 +78,14 @@ func (p Params) ToQueryCondition() (string, []interface{}) {
 	if p.TaskID != "" && p.TaskID != "0" {
 		args = append(args, p.TaskID)
 		paramsQuery = append(paramsQuery, "task_id=?")
+	}
+	if p.ResponseID != "" && p.ResponseID != "0" {
+		args = append(args, p.ResponseID)
+		paramsQuery = append(paramsQuery, "response_id=?")
+	}
+	if p.Status != "" && p.Status != "0" {
+		args = append(args, p.Status)
+		paramsQuery = append(paramsQuery, "status=?")
 	}
 
 	return strings.Join(paramsQuery, " AND "), args

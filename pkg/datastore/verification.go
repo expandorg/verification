@@ -2,7 +2,6 @@ package datastore
 
 import (
 	"strconv"
-	"strings"
 
 	"github.com/expandorg/verification/pkg/verification"
 	"github.com/go-sql-driver/mysql"
@@ -19,9 +18,12 @@ type Storage interface {
 	GetSettings(jobID uint64) (*verification.Settings, error)
 	CreateSettings(s verification.Settings) (*verification.Settings, error)
 	GetWhitelist(jobID uint64, verifierID uint64) (*verification.Whitelist, error)
-	CreateAssignment(*verification.NewAssignment) (*verification.Assignment, error)
+	CreateAssignment(*verification.EmptyAssignment) (*verification.Assignment, error)
 	GetAssignment(id string) (*verification.Assignment, error)
 	GetAssignments(verification.Params) (verification.Assignments, error)
+	DeleteAssignment(id string) (bool, error)
+	GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error)
+	Assign(a *verification.NewAssignment) (*verification.Assignment, error)
 }
 
 type VerificationStore struct {
@@ -165,18 +167,16 @@ func (vs *VerificationStore) GetAssignmentByResponseAndVerifier(responseID uint6
 	return assignment, nil
 }
 
-func (vs *VerificationStore) CreateAssignment(a *verification.NewAssignment) (*verification.Assignment, error) {
+func (vs *VerificationStore) CreateAssignment(a *verification.EmptyAssignment) (*verification.Assignment, error) {
 	result, err := vs.DB.Exec(
-		"INSERT INTO assignments (job_id, task_id, verifier_id, response_id, active, expires_at) VALUES (?,?,?,?,?,DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR))",
-		a.JobID, a.TaskID, a.VerifierID, a.ResponseID, 1)
-
+		"INSERT INTO assignments (job_id, task_id, response_id, active) VALUES (?,?,?,?)",
+		a.JobID, a.TaskID, a.ResponseID, 0,
+	)
 	if err != nil {
-		if err != nil {
-			mysqlerr, ok := err.(*mysql.MySQLError)
-			// duplicate entry verifier_id & job_id
-			if ok && mysqlerr.Number == 1062 {
-				return nil, AlreadyAssigned{}
-			}
+		mysqlerr, ok := err.(*mysql.MySQLError)
+		// duplicate entry verifier_id & job_id
+		if ok && mysqlerr.Number == 1062 {
+			return nil, AlreadyAssigned{}
 		}
 		return nil, err
 	}
@@ -185,59 +185,101 @@ func (vs *VerificationStore) CreateAssignment(a *verification.NewAssignment) (*v
 	if err != nil {
 		return nil, err
 	}
+	return vs.GetAssignment(strconv.FormatInt(id, 10))
+}
 
-	assi, err := vs.GetAssignment(strconv.FormatInt(id, 10))
-
+func (vs *VerificationStore) Assign(a *verification.NewAssignment) (*verification.Assignment, error) {
+	result, err := vs.DB.Exec(
+		"UPDATE assignments SET id=(SELECT @updated_id := id), verifier_id=?, active=?, status=?, assigned_at=CURRENT_TIMESTAMP, expires_at=DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR) WHERE job_id = ? AND verifier_id IS NULL LIMIT 1",
+		a.VerifierID, 1, verification.Active, a.JobID,
+	)
 	if err != nil {
+		mysqlerr, ok := err.(*mysql.MySQLError)
+		// duplicate entry verifier_id & job_id
+		if ok && mysqlerr.Number == 1062 {
+			return nil, AlreadyAssigned{}
+		}
 		return nil, err
 	}
 
-	return assi, nil
+	num, err := result.RowsAffected()
+	if err != nil {
+		return nil, err
+	}
+	if num == 0 {
+		return nil, NoAssignmentsAvailable{a.JobID}
+	}
+
+	var assignmentID string
+	err = vs.DB.Get(&assignmentID, "SELECT @updated_id")
+	if err != nil {
+		return nil, err
+	}
+	return vs.GetAssignment(assignmentID)
 }
 
 func (vs *VerificationStore) GetAssignments(p verification.Params) (verification.Assignments, error) {
 	assignments := verification.Assignments{}
 	query := "SELECT * FROM assignments"
-	paramsQuery := []string{}
 	args := []interface{}{}
 
-	if p.VerifierID != "" && p.VerifierID != "0" {
-		args = append(args, p.VerifierID)
-		paramsQuery = append(paramsQuery, "verifier_id=?")
-	}
-	if p.JobID != "" && p.JobID != "0" {
-		args = append(args, p.JobID)
-		paramsQuery = append(paramsQuery, "job_id=?")
-	}
-	if p.TaskID != "" && p.TaskID != "0" {
-		args = append(args, p.TaskID)
-		paramsQuery = append(paramsQuery, "task_id=?")
-	}
-	if p.ResponseID != "" && p.ResponseID != "0" {
-		args = append(args, p.ResponseID)
-		paramsQuery = append(paramsQuery, "response_id=?")
-	}
-
-	if len(paramsQuery) > 0 {
-		query = query + " Where " + strings.Join(paramsQuery, " AND ")
+	conditions, args := p.ToQueryCondition()
+	if len(args) > 0 {
+		query = query + " WHERE " + conditions
 	}
 
 	err := vs.DB.Select(&assignments, query, args...)
 	if err != nil {
 		return assignments, err
 	}
+
 	return assignments, nil
 }
 
+func (vs *VerificationStore) DeleteAssignment(id string) (bool, error) {
+	result, err := vs.DB.Exec("DELETE FROM assignments WHERE id = ?", id)
+	if err != nil {
+		return false, err
+	}
+
+	numAffected, err := result.RowsAffected()
+
+	if numAffected == 0 {
+		return false, AssignmentNotFound{ID: id}
+	}
+
+	return true, nil
+}
+
 func (vs *VerificationStore) UpdateAssignment(a *verification.Assignment) (*verification.Assignment, error) {
-	_, err := vs.DB.Exec(
-		`UPDATE assignments SET verifier_id=?, active=?, expires_at=? WHERE id=?`,
-		a.VerifierID, a.Active, a.ExpiresAt, a.ID,
-	)
+	if a.JobID == 0 || !a.VerifierID.Valid || !a.ResponseID.Valid || a.Status == "" {
+		return nil, AssignmentNotFound{VerifierID: a.VerifierID, JobID: a.JobID, ResponseID: uint64(a.ResponseID.Int64)}
+	}
+
+	var active bool
+	if a.Status == verification.Active {
+		active = true
+	}
+
+	query := "UPDATE assignments SET status=?, active=? WHERE verifier_id=? AND job_id=? AND response_id=?"
+	_, err := vs.DB.Exec(query, a.Status, active, a.VerifierID, a.JobID, a.ResponseID)
 	if err != nil {
 		return nil, err
 	}
+
+	if a.ID == 0 {
+		return a, nil
+	}
 	return vs.GetAssignment(strconv.FormatUint(a.ID, 10))
+}
+
+func (vs *VerificationStore) GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error) {
+	a := verification.JobEmptyAssignments{}
+	err := vs.DB.Select(&a, "SELECT job_id, count(id) as empty_count FROM assignments WHERE verifier_id is NULL GROUP BY job_id ")
+	if err != nil {
+		return nil, err
+	}
+	return a, nil
 }
 
 type DbQueryExecutor interface {

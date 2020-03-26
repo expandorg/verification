@@ -6,7 +6,6 @@ import (
 	"github.com/expandorg/verification/pkg/automatic"
 	"github.com/expandorg/verification/pkg/datastore"
 	"github.com/expandorg/verification/pkg/externalsvc"
-	"github.com/expandorg/verification/pkg/nulls"
 	"github.com/expandorg/verification/pkg/registrysvc"
 	"github.com/expandorg/verification/pkg/verification"
 )
@@ -14,9 +13,13 @@ import (
 type VerificationService interface {
 	Healthy() bool
 	SetAuthData(data authentication.AuthData)
+
+	CreateEmptyAssignment(r verification.TaskResponse, set *verification.Settings) (*verification.Assignment, error)
 	GetAssignments(verification.Params) (verification.Assignments, error)
 	GetAssignment(id string) (*verification.Assignment, error)
 	Assign(r verification.NewAssignment, set *verification.Settings) (*verification.Assignment, error)
+	DeleteAssignment(id string) (bool, error)
+	UpdateAssignment(a verification.Assignment) (*verification.Assignment, error)
 
 	VerifyManual(r verification.NewVerificationResponse, set *verification.Settings) (*verification.VerificationResponse, error)
 	VerifyAutomatic(r verification.TaskResponse, set *verification.Settings) (verification.VerificationResponses, error)
@@ -26,6 +29,8 @@ type VerificationService interface {
 
 	GetSettings(jobID uint64) (*verification.Settings, error)
 	CreateSettings(verification.Settings) (*verification.Settings, error)
+
+	GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error)
 }
 
 type service struct {
@@ -84,7 +89,27 @@ func (s *service) Assign(a verification.NewAssignment, set *verification.Setting
 		return nil, AssignmentNotAllowed{}
 	}
 
-	return s.store.CreateAssignment(&a)
+	return s.store.Assign(&a)
+}
+
+func (s *service) CreateEmptyAssignment(r verification.TaskResponse, set *verification.Settings) (*verification.Assignment, error) {
+	if set.Manual {
+		return nil, InvalidVerificationType{set.Manual}
+	}
+	empty := verification.EmptyAssignment{
+		ResponseID: r.ID,
+		TaskID:     r.TaskID,
+		JobID:      r.JobID,
+	}
+	return s.store.CreateAssignment(&empty)
+}
+
+func (s *service) DeleteAssignment(id string) (bool, error) {
+	return s.store.DeleteAssignment(id)
+}
+
+func (s *service) UpdateAssignment(a verification.Assignment) (*verification.Assignment, error) {
+	return s.store.UpdateAssignment(&a)
 }
 
 func (s *service) VerifyManual(r verification.NewVerificationResponse, set *verification.Settings) (*verification.VerificationResponse, error) {
@@ -102,7 +127,7 @@ func (s *service) VerifyManual(r verification.NewVerificationResponse, set *veri
 		return nil, err
 	}
 	// unassign verification
-	assignment.Active = nulls.NewBool(false)
+	assignment.Status = verification.InActive
 	_, err = s.store.UpdateAssignment(assignment)
 	if err != nil {
 		return nil, err
@@ -139,7 +164,7 @@ func (s *service) callAutomaticVerification(r verification.TaskResponse, set *ve
 	if reg != nil {
 		return s.external.Verify(reg, r)
 	}
-	return s.consensus.Verify(r, set)
+	return s.consensus.Verify(r, set, s.authorizor.GetAuthToken())
 }
 
 func (s *service) GetRegistration(jobID uint64, svcType string) *registrysvc.Registration {
@@ -156,4 +181,8 @@ func (s *service) GetAssignments(p verification.Params) (verification.Assignment
 
 func (s *service) GetAssignment(id string) (*verification.Assignment, error) {
 	return s.store.GetAssignment(id)
+}
+
+func (s *service) GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error) {
+	return s.store.GetJobsWithEmptyAssignments()
 }
