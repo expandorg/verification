@@ -93,7 +93,7 @@ func (s *service) Assign(a verification.NewAssignment, set *verification.Setting
 }
 
 func (s *service) CreateEmptyAssignment(r verification.TaskResponse, set *verification.Settings) (*verification.Assignment, error) {
-	if set.Manual {
+	if !set.Manual {
 		return nil, InvalidVerificationType{set.Manual}
 	}
 	empty := verification.EmptyAssignment{
