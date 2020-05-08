@@ -82,3 +82,21 @@ func (a *assignment) IsAllowed(set *Settings) (bool, error) {
 
 	return true, nil
 }
+
+func (jes JobEmptyAssignments) JobIDs() []uint64 {
+	ids := make([]uint64, len(jes))
+	for i, t := range jes {
+		ids[i] = t.JobID
+	}
+	return ids
+}
+
+func (js JobEmptyAssignments) Filter(cond func(JobEmptyAssignment) bool) JobEmptyAssignments {
+	result := make(JobEmptyAssignments, 0)
+	for _, tx := range js {
+		if cond(tx) {
+			result = append(result, tx)
+		}
+	}
+	return result
+}

@@ -23,6 +23,7 @@ type Storage interface {
 	GetAssignments(verification.Params) (verification.Assignments, error)
 	DeleteAssignment(id string) (bool, error)
 	GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error)
+	GetEligibleJobIDs(verifierID uint64, JobIDs []uint64) ([]uint64, error)
 	Assign(a *verification.NewAssignment) (*verification.Assignment, error)
 }
 
@@ -280,6 +281,31 @@ func (vs *VerificationStore) GetJobsWithEmptyAssignments() (verification.JobEmpt
 		return nil, err
 	}
 	return a, nil
+}
+
+func (vs *VerificationStore) GetEligibleJobIDs(verifierID uint64, JobIDs []uint64) ([]uint64, error) {
+	query, args, err := sqlx.In(`
+		SELECT t.job_id as job_id from 
+		(
+			SELECT s.job_id from settings s 
+			JOIN whitelists w on s.job_id = w.job_id and w.verifier_id = ?
+			WHERE s.manual = TRUE and s.requester = FALSE and s.whitelist = TRUE			
+				UNION			
+			SELECT s.job_id from settings s 
+			WHERE s.manual = TRUE and s.requester = FALSE and s.whitelist = FALSE
+		) as t 
+		WHERE t.job_id in (?)	
+		`,
+		verifierID,
+		JobIDs,
+	)
+	eligible := []uint64{}
+	query = vs.DB.Rebind(query)
+	err = vs.DB.Select(&eligible, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	return eligible, nil
 }
 
 type DbQueryExecutor interface {

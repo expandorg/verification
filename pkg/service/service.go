@@ -31,6 +31,7 @@ type VerificationService interface {
 	CreateSettings(verification.Settings) (*verification.Settings, error)
 
 	GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error)
+	GetEligibleJobs(VerifierID uint64) (verification.JobEmptyAssignments, error)
 }
 
 type service struct {
@@ -185,4 +186,32 @@ func (s *service) GetAssignment(id string) (*verification.Assignment, error) {
 
 func (s *service) GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error) {
 	return s.store.GetJobsWithEmptyAssignments()
+}
+
+func (s *service) GetEligibleJobs(VerifierID uint64) (verification.JobEmptyAssignments, error) {
+	available, err := s.store.GetJobsWithEmptyAssignments()
+	if err != nil {
+		return nil, err
+	}
+	if len(available) == 0 {
+		return available, nil
+	}
+
+	eligible, err := s.store.GetEligibleJobIDs(VerifierID, available.JobIDs())
+	if err != nil {
+		return nil, err
+	}
+	set := toSet(eligible)
+	filtered := available.Filter(func(j verification.JobEmptyAssignment) bool {
+		return set[j.JobID]
+	})
+	return filtered, nil
+}
+
+func toSet(arr []uint64) map[uint64]bool {
+	set := make(map[uint64]bool)
+	for _, v := range arr {
+		set[v] = true
+	}
+	return set
 }
