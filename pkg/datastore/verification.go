@@ -22,7 +22,8 @@ type Storage interface {
 	GetAssignment(id string) (*verification.Assignment, error)
 	GetAssignments(verification.Params) (verification.Assignments, error)
 	DeleteAssignment(id string) (bool, error)
-	GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error)
+	GetJobsWithEmptyAssignments(verifierID uint64) (verification.JobEmptyAssignments, error)
+	GetEligibleJobIDs(verifierID uint64, JobIDs []uint64) ([]uint64, error)
 	Assign(a *verification.NewAssignment) (*verification.Assignment, error)
 }
 
@@ -169,8 +170,8 @@ func (vs *VerificationStore) GetAssignmentByResponseAndVerifier(responseID uint6
 
 func (vs *VerificationStore) CreateAssignment(a *verification.EmptyAssignment) (*verification.Assignment, error) {
 	result, err := vs.DB.Exec(
-		"INSERT INTO assignments (job_id, task_id, response_id, active) VALUES (?,?,?,?)",
-		a.JobID, a.TaskID, a.ResponseID, 0,
+		"INSERT INTO assignments (job_id, task_id, response_id, worker_id, active) VALUES (?,?,?,?,?)",
+		a.JobID, a.TaskID, a.ResponseID, a.WorkerID, 0,
 	)
 	if err != nil {
 		mysqlerr, ok := err.(*mysql.MySQLError)
@@ -190,8 +191,8 @@ func (vs *VerificationStore) CreateAssignment(a *verification.EmptyAssignment) (
 
 func (vs *VerificationStore) Assign(a *verification.NewAssignment) (*verification.Assignment, error) {
 	result, err := vs.DB.Exec(
-		"UPDATE assignments SET id=(SELECT @updated_id := id), verifier_id=?, active=?, status=?, assigned_at=CURRENT_TIMESTAMP, expires_at=DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR) WHERE job_id = ? AND verifier_id IS NULL LIMIT 1",
-		a.VerifierID, 1, verification.Active, a.JobID,
+		"UPDATE assignments SET id=(SELECT @updated_id := id), verifier_id=?, active=?, status=?, assigned_at=CURRENT_TIMESTAMP, expires_at=DATE_ADD(CURRENT_TIMESTAMP, INTERVAL 2 HOUR) WHERE job_id = ? AND verifier_id IS NULL AND worker_id <> ? LIMIT 1",
+		a.VerifierID, 1, verification.Active, a.JobID, a.VerifierID,
 	)
 	if err != nil {
 		mysqlerr, ok := err.(*mysql.MySQLError)
@@ -273,13 +274,38 @@ func (vs *VerificationStore) UpdateAssignment(a *verification.Assignment) (*veri
 	return vs.GetAssignment(strconv.FormatUint(a.ID, 10))
 }
 
-func (vs *VerificationStore) GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error) {
+func (vs *VerificationStore) GetJobsWithEmptyAssignments(verifierID uint64) (verification.JobEmptyAssignments, error) {
 	a := verification.JobEmptyAssignments{}
-	err := vs.DB.Select(&a, "SELECT job_id, count(id) as empty_count FROM assignments WHERE verifier_id is NULL GROUP BY job_id ")
+	err := vs.DB.Select(&a, "SELECT job_id, count(id) as empty_count FROM assignments WHERE verifier_id is NULL and worker_id <> ? GROUP BY job_id ", verifierID)
 	if err != nil {
 		return nil, err
 	}
 	return a, nil
+}
+
+func (vs *VerificationStore) GetEligibleJobIDs(verifierID uint64, JobIDs []uint64) ([]uint64, error) {
+	query, args, err := sqlx.In(`
+		SELECT t.job_id as job_id from 
+		(
+			SELECT s.job_id from settings s 
+			JOIN whitelists w on s.job_id = w.job_id and w.verifier_id = ?
+			WHERE s.manual = TRUE and s.requester = FALSE and s.whitelist = TRUE			
+				UNION			
+			SELECT s.job_id from settings s 
+			WHERE s.manual = TRUE and s.requester = FALSE and s.whitelist = FALSE
+		) as t 
+		WHERE t.job_id in (?)	
+		`,
+		verifierID,
+		JobIDs,
+	)
+	eligible := []uint64{}
+	query = vs.DB.Rebind(query)
+	err = vs.DB.Select(&eligible, query, args...)
+	if err != nil {
+		return nil, err
+	}
+	return eligible, nil
 }
 
 type DbQueryExecutor interface {

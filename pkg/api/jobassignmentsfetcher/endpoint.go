@@ -9,11 +9,14 @@ import (
 	"github.com/go-kit/kit/endpoint"
 )
 
-func makeJobEmptyAssignmentsFetcherEndpoint(svc service.VerificationService) endpoint.Endpoint {
+func makeEligibleJobsFetcherEndpoint(svc service.VerificationService) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		data, _ := authentication.ParseAuthData(ctx)
 		svc.SetAuthData(data)
-		j, err := svc.GetJobsWithEmptyAssignments()
+
+		params := request.(VerifierRequest)
+
+		j, err := svc.GetEligibleJobs(params.VerifierID)
 		if err != nil {
 			return nil, errorResponse(err)
 		}
@@ -23,4 +26,8 @@ func makeJobEmptyAssignmentsFetcherEndpoint(svc service.VerificationService) end
 
 func errorResponse(err error) *apierror.APIError {
 	return apierror.New(500, err.Error(), err)
+}
+
+type VerifierRequest struct {
+	VerifierID uint64
 }

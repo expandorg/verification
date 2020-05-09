@@ -39,7 +39,7 @@ func New(s service.VerificationService) http.Handler {
 	r.Handle("/settings/{job_id}", settingfetcher.MakeHandler(s)).Methods("GET")
 	r.Handle("/settings", settingcreator.MakeHandler(s)).Methods("PUT")
 
-	r.Handle("/jobs/available", jobassignmentsfetcher.MakeHandler(s)).Methods("GET")
+	r.Handle("/jobs/eligible", jobassignmentsfetcher.MakeEligibleHandler(s)).Methods("GET")
 
 	r.Use(authentication.AuthMiddleware)
 	return withHandlers(r)
