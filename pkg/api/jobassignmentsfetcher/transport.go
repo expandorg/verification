@@ -11,14 +11,6 @@ import (
 	kithttp "github.com/go-kit/kit/transport/http"
 )
 
-func MakeAvailableHandler(s service.VerificationService) http.Handler {
-	return kithttp.NewServer(
-		makeJobEmptyAssignmentsFetcherEndpoint(s),
-		decodeEmptyRequest,
-		encodeResponse,
-	)
-}
-
 func MakeEligibleHandler(s service.VerificationService) http.Handler {
 	return kithttp.NewServer(
 		makeEligibleJobsFetcherEndpoint(s),

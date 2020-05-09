@@ -32,6 +32,7 @@ type Assignment struct {
 	ID         uint64      `db:"id" json:"id"`
 	JobID      uint64      `db:"job_id" json:"job_id"`
 	TaskID     uint64      `db:"task_id" json:"task_id"`
+	WorkerID   uint64      `db:"worker_id" json:"task_id"`
 	VerifierID nulls.Int64 `db:"verifier_id" json:"verifier_id"`
 	ResponseID nulls.Int64 `db:"response_id" json:"response_id"`
 	Active     nulls.Bool  `db:"active" json:"active"`
@@ -50,6 +51,7 @@ type NewAssignment struct {
 
 type EmptyAssignment struct {
 	JobID      uint64 `json:"job_id"`
+	WorkerID   uint64 `json:"worker_id"`
 	TaskID     uint64 `json:"task_id"`
 	ResponseID uint64 `json:"response_id"`
 }

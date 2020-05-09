@@ -30,7 +30,6 @@ type VerificationService interface {
 	GetSettings(jobID uint64) (*verification.Settings, error)
 	CreateSettings(verification.Settings) (*verification.Settings, error)
 
-	GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error)
 	GetEligibleJobs(VerifierID uint64) (verification.JobEmptyAssignments, error)
 }
 
@@ -101,6 +100,7 @@ func (s *service) CreateEmptyAssignment(r verification.TaskResponse, set *verifi
 		ResponseID: r.ID,
 		TaskID:     r.TaskID,
 		JobID:      r.JobID,
+		WorkerID:   r.WorkerID,
 	}
 	return s.store.CreateAssignment(&empty)
 }
@@ -184,12 +184,8 @@ func (s *service) GetAssignment(id string) (*verification.Assignment, error) {
 	return s.store.GetAssignment(id)
 }
 
-func (s *service) GetJobsWithEmptyAssignments() (verification.JobEmptyAssignments, error) {
-	return s.store.GetJobsWithEmptyAssignments()
-}
-
-func (s *service) GetEligibleJobs(VerifierID uint64) (verification.JobEmptyAssignments, error) {
-	available, err := s.store.GetJobsWithEmptyAssignments()
+func (s *service) GetEligibleJobs(verifierID uint64) (verification.JobEmptyAssignments, error) {
+	available, err := s.store.GetJobsWithEmptyAssignments(verifierID)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +193,7 @@ func (s *service) GetEligibleJobs(VerifierID uint64) (verification.JobEmptyAssig
 		return available, nil
 	}
 
-	eligible, err := s.store.GetEligibleJobIDs(VerifierID, available.JobIDs())
+	eligible, err := s.store.GetEligibleJobIDs(verifierID, available.JobIDs())
 	if err != nil {
 		return nil, err
 	}
