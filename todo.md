@@ -21,7 +21,6 @@ job
 
 //- task flow
 assignment
-  (job_id, task_id, id)
   user_id
 
 responses
