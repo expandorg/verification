@@ -47,5 +47,5 @@ type AssignmentNotFound struct {
 }
 
 func (err AssignmentNotFound) Error() string {
-	return fmt.Sprintf("No Record found for id: %s, worker_id: %d, verifier_id: %d, job_id: %d, response_id: %d", err.ID, err.WorkerID, err.VerifierID, err.JobID, err.ResponseID)
+	return fmt.Sprintf("No Record found for id: %s, worker_id: %d, verifier_id: %d, job_id: %d, response_id: %d", err.ID, err.WorkerID, err.VerifierID.Int64, err.JobID, err.ResponseID)
 }
