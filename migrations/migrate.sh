@@ -7,7 +7,7 @@ db=$3
 if [ "$action" = "composeup" ]; then
   /migrations/migrate \
     -source file:///migrations \
-    -database "mysql://$VERIFICATION_DB_USER:$VERIFICATION_DB_PASSWORD@tcp($VERIFICATION_DB_HOST:$VERIFICATION_DB_PORT)/$VERIFICATION_DBNAME" \
+    -database "mysql://$VERIFICATION_DB_USER:$VERIFICATION_DB_PASSWORD@tcp($VERIFICATION_DB_HOST:$VERIFICATION_DB_PORT)/$VERIFICATION_DB" \
     up
   exit 0
 fi

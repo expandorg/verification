@@ -29,11 +29,11 @@ spec:
             configMapKeyRef:
               name: DATA
               key: VERIFICATION_DB_PORT
-        - name: VERIFICATION_DBNAME
+        - name: VERIFICATION_DB
           valueFrom:
             configMapKeyRef:
               name: DATA
-              key: VERIFICATION_DBNAME
+              key: VERIFICATION_DB
         - name: VERIFICATION_DB_USER
           valueFrom:
             configMapKeyRef:
@@ -90,11 +90,11 @@ spec:
             configMapKeyRef:
               name: DATA
               key: VERIFICATION_DB_PORT
-        - name: VERIFICATION_DBNAME
+        - name: VERIFICATION_DB
           valueFrom:
             configMapKeyRef:
               name: DATA
-              key: VERIFICATION_DBNAME
+              key: VERIFICATION_DB
         - name: VERIFICATION_DB_USER
           valueFrom:
             configMapKeyRef:
