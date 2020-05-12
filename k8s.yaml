@@ -29,11 +29,11 @@ spec:
             configMapKeyRef:
               name: DATA
               key: VERIFICATION_DB_PORT
-        - name: VERIFICATION_DB
+        - name: VERIFICATION_DB_NAME
           valueFrom:
             configMapKeyRef:
               name: DATA
-              key: VERIFICATION_DB
+              key: VERIFICATION_DB_NAME
         - name: VERIFICATION_DB_USER
           valueFrom:
             configMapKeyRef:
@@ -49,6 +49,16 @@ spec:
             configMapKeyRef:
               name: DATA
               key: JWT_SECRET
+        - name: REGISTRY_SVC_URL
+          valueFrom:
+            configMapKeyRef:
+              name: verification-data
+              key: REGISTRY_SVC_URL
+        - name: RESPONSES_SVC_URL
+          valueFrom:
+            configMapKeyRef:
+              name: verification-data
+              key: RESPONSES_SVC_URL
         ports: 
         - containerPort: 8186
         resources: {}

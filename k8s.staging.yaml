@@ -49,6 +49,16 @@ spec:
             configMapKeyRef:
               name: verification-data
               key: JWT_SECRET
+        - name: REGISTRY_SVC_URL
+          valueFrom:
+            configMapKeyRef:
+              name: verification-data
+              key: REGISTRY_SVC_URL
+        - name: RESPONSES_SVC_URL
+          valueFrom:
+            configMapKeyRef:
+              name: verification-data
+              key: RESPONSES_SVC_URL
         ports: 
         - containerPort: 8186
         resources: {}
