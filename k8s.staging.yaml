@@ -2,52 +2,52 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: APP
+  name: verification
 spec:
   selector:
     matchLabels:
-      app: APP
+      app: verification
   replicas: 1
   template:
     metadata:
       labels:
-        app: APP
+        app: verification
     spec:
       containers:
-      - name: APP
-        image: gcr.io/ORG/NAME:VERSION
+      - name: verification
+        image: gcr.io/gems-org/verification:dev
         command: ["./verification"]
         args: ["--env=ENV"]
         env:
         - name: VERIFICATION_DB_HOST
           valueFrom:
             configMapKeyRef:
-              name: DATA
+              name: verification-data
               key: VERIFICATION_DB_HOST
         - name: VERIFICATION_DB_PORT
           valueFrom:
             configMapKeyRef:
-              name: DATA
+              name: verification-data
               key: VERIFICATION_DB_PORT
-        - name: VERIFICATION_DB
+        - name: VERIFICATION_DB_NAME
           valueFrom:
             configMapKeyRef:
-              name: DATA
-              key: VERIFICATION_DB
+              name: verification-data
+              key: VERIFICATION_DB_NAME
         - name: VERIFICATION_DB_USER
           valueFrom:
             configMapKeyRef:
-              name: DATA
+              name: verification-data
               key: VERIFICATION_DB_USER
         - name: VERIFICATION_DB_PASSWORD
           valueFrom:
             configMapKeyRef:
-              name: DATA
+              name: verification-data
               key: VERIFICATION_DB_PASSWORD
         - name: JWT_SECRET
           valueFrom:
             configMapKeyRef:
-              name: DATA
+              name: verification-data
               key: JWT_SECRET
         ports: 
         - containerPort: 8186
@@ -57,48 +57,48 @@ spec:
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: MIGRATION
+  name: verification-migration
 spec:
   ttlSecondsAfterFinished: 100
   template:
     metadata:
       labels:
-        app: MIGRATION
+        app: verification-migration
     spec:
       containers:
-      - name: MIGRATION
-        image: gcr.io/ORG/NAME-migration:VERSION
+      - name: verification-migration
+        image: gcr.io/gems-org/verification-migration-dev:dev
         args: ["composeup"]
         env:
         - name: VERIFICATION_DB_HOST
           valueFrom:
             configMapKeyRef:
-              name: DATA
+              name: verification-data
               key: VERIFICATION_DB_HOST
         - name: VERIFICATION_DB_PORT
           valueFrom:
             configMapKeyRef:
-              name: DATA
+              name: verification-data
               key: VERIFICATION_DB_PORT
         - name: VERIFICATION_DB_NAME
           valueFrom:
             configMapKeyRef:
-              name: DATA
+              name: verification-data
               key: VERIFICATION_DB_NAME
         - name: VERIFICATION_DB_USER
           valueFrom:
             configMapKeyRef:
-              name: DATA
+              name: verification-data
               key: VERIFICATION_DB_USER
         - name: VERIFICATION_DB_PASSWORD
           valueFrom:
             configMapKeyRef:
-              name: DATA
+              name: verification-data
               key: VERIFICATION_DB_PASSWORD
         - name: JWT_SECRET
           valueFrom:
             configMapKeyRef:
-              name: DATA
+              name: verification-data
               key: JWT_SECRET
       restartPolicy: Never
   backoffLimit: 4
@@ -107,10 +107,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: APP
+  name: verification
 spec:
   selector:
-    app: APP
+    app: verification
   ports:
   - port: 80
     targetPort: 8186

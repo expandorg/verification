@@ -1,10 +1,11 @@
-FROM golang:1.10-alpine AS build-stage
+FROM golang:1.13-alpine AS build-stage
 
 RUN apk add --update make git
 RUN mkdir -p /go/src/github.com/expandorg/verification
 WORKDIR /go/src/github.com/expandorg/verification
 
 COPY . /go/src/github.com/expandorg/verification
+COPY .env /go/src/github.com/expandorg/verification/.env
 
 ARG GIT_COMMIT
 ARG VERSION
