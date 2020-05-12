@@ -1,4 +1,3 @@
-// Domain model
 
 job
   (id)
